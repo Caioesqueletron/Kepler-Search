@@ -1,12 +1,28 @@
 library(readr)
 library(gridExtra)
-data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
+data  = read.csv('cumulative.csv', stringsAsFactors = TRUE)
 
-data.column.class = data$koi_score
-data$class <- NULL
+data.column.class = data$koi_pdisposition
+data$rowid<- NULL
+data$kepid<- NULL
+data$kepler_name<- NULL
+data$koi_disposition<- NULL
+data$koi_pdisposition<- NULL
+data$kepoi_name<-NULL
+data$koi_teq_err1<-NULL
+data$koi_teq_err2<-NULL
+
+
+sapply(data, typeof)
 
 
 
-data.column.class.class = data$koi_impact_err1.length
+barplot(prop.table(table(data$koi_disposition)))
 
-hist(data.column.class)
+hist(as.number(data$koi_pdisposition))
+
+
+#Frequencia do koi_score
+hist(data$koi_score)
+
+
