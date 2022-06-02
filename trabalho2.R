@@ -16,13 +16,22 @@ data$koi_teq_err2<-NULL
 sapply(data, typeof)
 
 
-
-barplot(prop.table(table(data$koi_disposition)))
-
-hist(as.number(data$koi_pdisposition))
+#Frequencia pdisposition
+hist(data$koi_pdisposition)
 
 
 #Frequencia do koi_score
 hist(data$koi_score)
 
+
+#Tamanaho dos corpos
+boxplot(data$ra)
+max(data$ra)
+min(data$ra)
+mean(data$ra)
+
+boxplot(data$dec)
+mean(data$dec)
+#Tamanho do koi_time
+boxplot(data$koi_time0bk)
 
