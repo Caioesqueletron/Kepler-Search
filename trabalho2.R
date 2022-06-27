@@ -29,8 +29,13 @@ getmode <- function(v) {
   uniqv[which.max(tabulate(match(v, uniqv)))]
 
 }
+
+#Medida de distriuição do atributo koi_disposition
 moda <- getmode(data$koi_disposition)
 print(moda)
+
+#Medida de distribuição da koi_pdispodition
+moda2 <- getmode(data$ko)
 #Frequencia pdisposition
 hist(data$koi_pdisposition)
 
@@ -51,7 +56,11 @@ mean(data$dec)
 boxplot(data$koi_time0bk)
 
 
-#Separação de conjuntos de teste e treino
-sample <- sample(c(data), nrow(data), replace = TRUE, prob = c(0.7, 0.3))
-train  <- data[sample, ]
-test   <- data[!sample, ]
+#Item  7 - Separação de conjuntos de teste e treino
+sample <- sample(c(rep(0, 0.8 * nrow(data)),  # Create dummy for splitting
+                   rep(1, 0.2 * nrow(data))))
+table(sample)
+train <- data[sample == 0, ]
+tabela <- table(train$koi_pdisposition)
+print(tabela)
+test  <- data[sample == 1, ]
