@@ -23,7 +23,7 @@ sapply(data, typeof)
 
 # 4 - Exploração dos dados atraves de medidas de localidade
 
-#função para coletar a moda
+#função para coletar a moda de atributos nominais
 getmode <- function(v) {
   uniqv <- unique(v)
   uniqv[which.max(tabulate(match(v, uniqv)))]
@@ -31,29 +31,15 @@ getmode <- function(v) {
 }
 
 #Medida de distriuição do atributo koi_disposition
-moda <- getmode(data$koi_disposition)
-print(moda)
+modaKoi_disposition <- getmode(data$koi_disposition)
+print(modaKoi_disposition)
+
+#Medida de distriuição do atributo koi_disposition
+modaKoi_pdisposition <- getmode(data$koi_pdisposition)
+print(modaKoi_pdisposition)
 
 #Medida de distribuição da koi_pdispodition
 moda2 <- getmode(data$ko)
-#Frequencia pdisposition
-hist(data$koi_pdisposition)
-
-
-#Frequencia do koi_score
-hist(data$koi_score)
-
-
-#Tamanaho dos corpos
-boxplot(data$koi_duration)
-max(data$ra)
-min(data$ra)
-mean(data$ra)
-
-boxplot(data$dec)
-mean(data$dec)
-#Tamanho do koi_time
-boxplot(data$koi_time0bk)
 
 
 #Item  7 - Separação de conjuntos de teste e treino
@@ -64,3 +50,5 @@ train <- data[sample == 0, ]
 tabela <- table(train$koi_pdisposition)
 print(tabela)
 test  <- data[sample == 1, ]
+tabela2 <- table(test$koi_pdisposition)
+print(tabela2)
