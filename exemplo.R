@@ -1,6 +1,6 @@
 library(readr)
 
-data <- read.csv("../datasets-uci-iris.csv", stringsAsFactors = FALSE)
+data <- read.csv("datasets-uci-iris.csv", stringsAsFactors = FALSE)
 
 data.column.class <- data$class
 data$class <- NULL
