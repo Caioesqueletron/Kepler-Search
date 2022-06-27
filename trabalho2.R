@@ -3,7 +3,7 @@ library(gridExtra)
 library(dplyr)
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
 
-#1target
+#1 - Imprime o atributo target
 target <- data$koi_pdisposition
 sample(data)
 unique(data$koi_duration)
@@ -31,12 +31,35 @@ getmode <- function(v) {
 }
 
 getLocationsMeasures <- function(value){
+  print(value)
+  
   mean <- mean(value, na.rm = TRUE)
   print(mean)
   median <- median(value, na.rm = TRUE)
   print(median)
 }
+frea
 
+atributesMeanAndMedian <- data.frame(data$koi_score, 
+                                   data$koi_period, 
+                                   data$koi_time0bk,
+                                   data$koi_impact,
+                                   data$koi_duration,
+                                   data$koi_depth,
+                                   data$koi_prad,
+                                   data$koi_teq,
+                                   data$koi_insol,
+                                   data$koi_model_snr,
+                                   data$koi_slogg,
+                                   data$koi_srad,
+                                   data$koi_tce_plnt_num,
+                                   data$ra,
+                                   data$dec,
+                                   data$koi_kepmag)
+summary(atributesMeanAndMedian)
+
+
+print(atributesMeanAndMedian)
 #Medida de localidade do atributo koi_disposition
 result <- getmode(data$koi_disposition)
 
@@ -49,8 +72,8 @@ result <- getLocationsMeasures(data$koi_score)
 #Medida de distribuição da koi_fpflag_nt
 result <- getmode(data$koi_fpflag_nt)
 
-#Medida de distribuição da koi_fpflag_nt
-
+#Medida de distribuição da koi_fpflag_ss
+result <- getmode(data$koi_fpflag_ss)
 
 
 #Item  7 - Separação de conjuntos de teste e treino
