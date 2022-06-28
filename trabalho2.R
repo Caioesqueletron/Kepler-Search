@@ -17,9 +17,7 @@ data$koi_teq_err1<-NULL
 data$koi_teq_err2<-NULL
 
 
-sapply(data, typeof)
 
-summary(data)
 
 # 4 - Exploração dos dados atraves de medidas de localidade
 
@@ -31,16 +29,24 @@ getmode <- function(v) {
 }
 
 getLocationsMeasures <- function(value){
-  print(value)
   
-  mean <- mean(value, na.rm = TRUE)
-  print(mean)
-  median <- median(value, na.rm = TRUE)
-  print(median)
+ 
+    media <- mean(value, na.rm = TRUE)
+    cat("\nMédia = ", media)
+    mediana <- median(value, na.rm = TRUE)
+    cat("\nMediana = ", mediana)
+    maximum <- max(value, na.rm = TRUE)
+    cat("\nValor Maximo =", maximum)
+    minimum<- min(value, na.rm = TRUE)
+    cat("\nValor minimo =",minimum)
+    sortedData <- sort(value)
+    quartis <- quantile(sortedData,type=4)
+    cat("\nQuartis",quartis) 
+  
+ 
 }
-frea
 
-atributesMeanAndMedian <- data.frame(data$koi_score, 
+atributesForLocation <- data.frame(data$koi_score, 
                                    data$koi_period, 
                                    data$koi_time0bk,
                                    data$koi_impact,
@@ -55,26 +61,39 @@ atributesMeanAndMedian <- data.frame(data$koi_score,
                                    data$koi_tce_plnt_num,
                                    data$ra,
                                    data$dec,
-                                   data$koi_kepmag)
-summary(atributesMeanAndMedian)
+                                  data$koi_kepmag)
+atributesModeForLocation <- data.frame(data$koi_disposition, 
+                                      data$koi_pdisposition, 
+                                      data$koi_fpflag_nt,
+                                      data$koi_fpflag_ss,
+                                      data$koi_fpflag_co,
+                                      data$koi_fpflag_ec)
 
+#Media, mediana e quartis para os dados quantitativos
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getLocationsMeasures(row)
+  i<- i+1
+  
+}
 
-print(atributesMeanAndMedian)
-#Medida de localidade do atributo koi_disposition
-result <- getmode(data$koi_disposition)
+#Moda dos atributos quantitativos
+i<-0
+for(row in atributesModeForLocation){
+  cat("\n\nDados do", i )
+  getmode(row)
+  i<- i+1
+  
+}
 
-#Medida de localidade do atributo koi_disposition
-result <- getmode(data$koi_pdisposition)
+#Printagem dos boxplots
+boxplot(data$koi_period)
 
-#Medida de localidade do atributo koi_score
-result <- getLocationsMeasures(data$koi_score)
+######################## ---------------------------- ############################3
 
-#Medida de distribuição da koi_fpflag_nt
-result <- getmode(data$koi_fpflag_nt)
-
-#Medida de distribuição da koi_fpflag_ss
-result <- getmode(data$koi_fpflag_ss)
-
+#Item 5 - Exploração das medidas de espalhamento
+boxplot(data$koi_score)
 
 #Item  7 - Separação de conjuntos de teste e treino
 sample <- sample(c(rep(0, 0.8 * nrow(data)),  
