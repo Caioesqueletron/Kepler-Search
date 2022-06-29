@@ -46,6 +46,28 @@ getLocationsMeasures <- function(value){
  
 }
 
+
+
+getVariance <- function(value){
+  
+  variance <- var(value, na.rm=TRUE)
+  cat("\nVariancia = ", variance)
+  
+  
+}
+
+getInterval <- function(value){
+  interval <- (max(value, na.rm = TRUE) - min(value, na.rm = TRUE))
+  cat("\nIntervalar = ", interval)
+  
+}
+
+getDesvioPadrao <- function(value){
+  desvio <- sd(value, na.rm = TRUE)
+  cat("\nDesvio Padrão = ", desvio)
+  
+}
+
 atributesForLocation <- data.frame(data$koi_score, 
                                    data$koi_period, 
                                    data$koi_time0bk,
@@ -88,12 +110,45 @@ for(row in atributesModeForLocation){
 }
 
 #Printagem dos boxplots
+boxplot(data$koi_score)
 boxplot(data$koi_period)
+boxplot(data$koi_time0bk)
+boxplot(data$koi_impact)
+boxplot(data$koi_duration)
+boxplot(data$koi_depth)
+boxplot(data$koi_prad)
+boxplot(data$koi_teq)
+boxplot(data$koi_insol)
+boxplot()
+
 
 ######################## ---------------------------- ############################3
 
 #Item 5 - Exploração das medidas de espalhamento
-boxplot(data$koi_score)
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getInterval(row)
+  i<- i+1
+  
+}
+
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getVariance(row)
+  i<- i+1
+  
+}
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getDesvioPadrao(row)
+  i<- i+1
+  
+}
+
+#Item 6 - Medidas de dispersão
 
 #Item  7 - Separação de conjuntos de teste e treino
 sample <- sample(c(rep(0, 0.8 * nrow(data)),  
