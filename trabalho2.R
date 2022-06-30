@@ -110,7 +110,7 @@ for(row in atributesModeForLocation){
 }
 
 #Printagem dos boxplots
-boxplot(data$koi_score)
+boxplot(data$koi_score, ylab = "Disposition Score", main = "Disposition Score")
 boxplot(data$koi_period)
 boxplot(data$koi_time0bk)
 boxplot(data$koi_impact)
@@ -150,6 +150,8 @@ for(row in atributesForLocation){
 
 #Item 6 - Medidas de dispersão
 
+
+
 #Item  7 - Separação de conjuntos de teste e treino
 sample <- sample(c(rep(0, 0.8 * nrow(data)),  
                    rep(1, 0.2 * nrow(data))))
@@ -160,3 +162,10 @@ print(tabela)
 test  <- data[sample == 1, ]
 tabela2 <- table(test$koi_pdisposition)
 print(tabela2)
+
+#Item 8 - Eliminação de atributos não necessários
+
+
+#Item 9 - Eliminação de exemplos não necessários
+
+
