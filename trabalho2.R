@@ -3,8 +3,10 @@ library(gridExtra)
 library(dplyr)
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
 
+
 #1 - Imprime o atributo target
-target <- data$koi_pdisposition
+target <- data$koi_disposition
+table(target)
 sample(data)
 unique(data$koi_duration)
 
@@ -111,15 +113,14 @@ for(row in atributesModeForLocation){
 
 #Printagem dos boxplots
 boxplot(data$koi_score, ylab = "Disposition Score", main = "Disposition Score")
-boxplot(data$koi_period)
-boxplot(data$koi_time0bk)
-boxplot(data$koi_impact)
-boxplot(data$koi_duration)
-boxplot(data$koi_depth)
-boxplot(data$koi_prad)
-boxplot(data$koi_teq)
+boxplot(data$koi_period, ylab= "koi_period", main="Period",outline=FALSE)
+boxplot(data$koi_time0bk,outline=FALSE)
+boxplot(data$koi_impact,outline=FALSE)
+boxplot(data$koi_duration,outline=FALSE)
+boxplot(data$koi_depth,outline=FALSE)
+boxplot(data$koi_prad,outline=FALSE)
+boxplot(data$koi_teq,outline=FALSE)
 boxplot(data$koi_insol)
-boxplot()
 
 
 ######################## ---------------------------- ############################3
@@ -160,12 +161,36 @@ train <- data[sample == 0, ]
 tabela <- table(train$koi_pdisposition)
 print(tabela)
 test  <- data[sample == 1, ]
-tabela2 <- table(test$koi_pdisposition)
+tabela2 <- table(test$koi_disposition)
 print(tabela2)
 
 #Item 8 - Eliminação de atributos não necessários
+testMatriz = as.matrix.data.frame(train)
+print(testMatriz)
 
+#removendo atributos desnecesários do datset de treino
+train$rowid<- NULL
+train$kepid<- NULL
+train$kepler_name<- NULL
+train$kepoi_name<-NULL
+train$koi_teq_err1<-NULL
+train$koi_teq_err2<-NULL
+print(train)
+summary(train)
 
+#removendo atributos desnecessários do dataset de teste
+test$rowid<- NULL
+test$kepid<- NULL
+test$kepler_name<- NULL
+test$kepoi_name<-NULL
+test$koi_teq_err1<-NULL
+test$koi_teq_err2<-NULL
+nrow(test)
+test[!duplicated(test),]
+duplicated(test)
+nrow(test)
 #Item 9 - Eliminação de exemplos não necessários
-
-
+nrow(train)
+train[!duplicated(train),]
+nrow(train)
+unique(train)
