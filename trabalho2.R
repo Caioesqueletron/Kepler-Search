@@ -1,8 +1,57 @@
 library(readr)
 library(gridExtra)
 library(dplyr)
-data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
+library(ROSE)
 
+#Inicio e alguns tratamentos
+data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
+i<- 1
+while (i < 3000) {
+  if(!is.na((data[i,5]))){
+    
+    if(data[i,5] == "FALSE POSITIVE"){
+      print("passou")
+      
+      data<- data[-i,]
+      i <- i + 1
+    }
+  }
+  
+} 
+
+
+
+table(data$koi_disposition)
+
+#Tratamento das colunas de erros
+
+data$koi_time0bk_err1 <- data$koi_time0bk_err1 + data$koi_time0bk
+data$koi_time0bk_err2 <- data$koi_time0bk_err2 + data$koi_time0bk
+data$koi_time0bk <- NULL
+
+data$koi_period_err1 <- data$koi_period_err1 + data$koi_period
+data$koi_period_err2 <- data$koi_period_err2 + data$koi_period
+data$koi_period <- NULL
+
+data$koi_impact_err1 <- data$koi_impact_err1 + data$koi_impact
+data$koi_impact_err2 <- data$koi_impact_err2 + data$koi_impact
+data$koi_impact <- NULL
+
+data$koi_duration_err1 <- data$koi_duration_err1 + data$koi_duration
+data$koi_duration_err2 <- data$koi_duration_err2 + data$koi_duration
+data$koi_duration <- NULL
+
+data$koi_depth_err1 <- data$koi_depth_err1 + data$koi_depth
+data$koi_depth_err2 <- data$koi_depth_err2+ data$koi_depth
+data$koi_depth <- NULL
+
+data$koi_insol_err1 <- data$koi_insol_err1 + data$koi_insol
+data$koi_insol_err2 <- data$koi_insol_err2 + data$koi_insol
+data$koi_insol <- NULL
+
+data$koi_steff_err1 <- data$koi_steff_err1 + data$koi_steff
+data$koi_steff_err2 <- data$koi_steff_err2 + data$koi_steff
+data$koi_steff_err1 <- data$koi_steff_err1 + data$koi_steff
 
 #1 - Imprime o atributo target
 target <- data$koi_disposition
@@ -189,8 +238,31 @@ nrow(test)
 test[!duplicated(test),]
 duplicated(test)
 nrow(test)
-#Item 9 - Eliminação de exemplos não necessários
+#Item 9 - Eliminação de exemplos não necessários - estou na duvida de como fazer
 nrow(train)
 train[!duplicated(train),]
 nrow(train)
 unique(train)
+
+
+summary(train)
+
+
+#12 - Limpeza de dados
+#Limpeza de dados treino e teste
+for(i in 1:nrow(train)){
+  if(is.na(train[i,3])){
+    if(train[i,1] == "FALSE POSITIVE" && train[i,2] == "FALSE POSITIVE" ){
+      print("passou")
+      train[i,3] <- 0.000
+    }
+    
+  }
+}
+
+#Verificando dados duplicados
+print(train[duplicated(train),])
+print(test[duplicated(test), ])
+
+
+
