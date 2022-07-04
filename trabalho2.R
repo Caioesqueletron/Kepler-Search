@@ -5,21 +5,8 @@ library(ROSE)
 
 #Inicio e alguns tratamentos
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
-i<- 1
-while (i < 3000) {
-  if(!is.na((data[i,5]))){
-    
-    if(data[i,5] == "FALSE POSITIVE"){
-      print("passou")
-      
-      data<- data[-i,]
-      i <- i + 1
-    }
-  }
-  
-} 
 
-
+summary(data)
 
 table(data$koi_disposition)
 
@@ -51,23 +38,30 @@ data$koi_insol <- NULL
 
 data$koi_steff_err1 <- data$koi_steff_err1 + data$koi_steff
 data$koi_steff_err2 <- data$koi_steff_err2 + data$koi_steff
-data$koi_steff_err1 <- data$koi_steff_err1 + data$koi_steff
+data$koi_steff<- NULL
 
+data$koi_slogg_err1 <- data$koi_slogg_err1 + data$koi_slogg
+data$koi_slogg_err2 <- data$koi_slogg_err2 + data$koi_slogg
+data$koi_slogg <- NULL
+
+data$koi_srad_err1 <- data$koi_srad_err1 + data$koi_srad
+data$koi_srad_err2 <- data$koi_srad_err2 + data$koi_srad
+data$koi_srad <- NULL
+
+data$koi_prad_err1 <- data$koi_prad_err1 + data$koi_prad
+data$koi_prad_err2 <- data$koi_prad_err2 + data$koi_prad
+
+data$koi_prad <- NULL
+
+
+
+
+summary(data)
 #1 - Imprime o atributo target
-target <- data$koi_disposition
+target <- data$koi_pdisposition
 table(target)
 sample(data)
 unique(data$koi_duration)
-
-data.column.class = data$koi_pdisposition
-data$rowid<- NULL
-data$kepid<- NULL
-data$kepler_name<- NULL
-data$kepoi_name<-NULL
-data$koi_teq_err1<-NULL
-data$koi_teq_err2<-NULL
-
-
 
 
 # 4 - Exploração dos dados atraves de medidas de localidade
@@ -78,7 +72,7 @@ getmode <- function(v) {
  print( uniqv[which.max(tabulate(match(v, uniqv)))])
 
 }
-
+#Função para calcular a média, mediana e quartis
 getLocationsMeasures <- function(value){
   
  
@@ -98,7 +92,7 @@ getLocationsMeasures <- function(value){
 }
 
 
-
+#Função para calcular a variancia
 getVariance <- function(value){
   
   variance <- var(value, na.rm=TRUE)
@@ -107,12 +101,14 @@ getVariance <- function(value){
   
 }
 
+#Função para calcular o intervalar
 getInterval <- function(value){
   interval <- (max(value, na.rm = TRUE) - min(value, na.rm = TRUE))
   cat("\nIntervalar = ", interval)
   
 }
 
+#Função para calcular o desvio padrão
 getDesvioPadrao <- function(value){
   desvio <- sd(value, na.rm = TRUE)
   cat("\nDesvio Padrão = ", desvio)
@@ -121,16 +117,26 @@ getDesvioPadrao <- function(value){
 
 atributesForLocation <- data.frame(data$koi_score, 
                                    data$koi_period, 
-                                   data$koi_time0bk,
-                                   data$koi_impact,
-                                   data$koi_duration,
-                                   data$koi_depth,
-                                   data$koi_prad,
+                                   data$koi_time0bk_err1,
+                                   data$koi_time0bk_err2,
+                                   data$koi_impact_err1,
+                                   data$koi_impact_err2,
+                                   data$koi_duration_err1,
+                                   data$koi_duration_err2,
+                                   data$koi_depth_err1,
+                                   data$koi_depth_err2,
+                                   data$koi_prad_err1,
+                                   data$koi_prad_err2,
                                    data$koi_teq,
-                                   data$koi_insol,
+                                   data$koi_insol_err1,
+                                   data$koi_insol_err2,
                                    data$koi_model_snr,
-                                   data$koi_slogg,
-                                   data$koi_srad,
+                                   data$koi_slogg_err1,
+                                   data$koi_slogg_err2,
+                                   data$koi_steff_err1,
+                                   data$koi_steff_err2,
+                                   data$koi_srad_err1,
+                                   data$koi_srad_err2,
                                    data$koi_tce_plnt_num,
                                    data$ra,
                                    data$dec,
@@ -161,15 +167,31 @@ for(row in atributesModeForLocation){
 }
 
 #Printagem dos boxplots
-boxplot(data$koi_score, ylab = "Disposition Score", main = "Disposition Score")
-boxplot(data$koi_period, ylab= "koi_period", main="Period",outline=FALSE)
-boxplot(data$koi_time0bk,outline=FALSE)
-boxplot(data$koi_impact,outline=FALSE)
-boxplot(data$koi_duration,outline=FALSE)
-boxplot(data$koi_depth,outline=FALSE)
-boxplot(data$koi_prad,outline=FALSE)
+boxplot(data$koi_score, ylab = "Score", main = "Disposition Score")
+boxplot(data$koi_period_err1, ylab= "dias", main="Periodo Orbtital[erro minimo]",outline=FALSE)
+boxplot(data$koi_period_err2, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=FALSE)
+boxplot(data$koi_time0bk_err1, ylab="BJD" ,main="Transit Epoch[erro minimo]",outline=TRUE)
+boxplot(data$koi_time0bk_err2, ylab="BJD" ,main="Transit Epoch[erro maximo]",outline=TRUE)
+boxplot(data$koi_impact_err1, main="Impact Parameter[erro minimo]" )
+boxplot(data$koi_impact_err2, main="Impact Parameter[erro maximo]")
+boxplot(data$koi_duration_err1,outline=TRUE)
+boxplot(data$koi_duration_err2,outline=TRUE)
+boxplot(data$koi_depth_err1,outline=FALSE)
+boxplot(data$koi_depth_err2,outline=FALSE)
+boxplot(data$koi_prad_err1,outline=FALSE)
+boxplot(data$koi_prad_err2,outline=FALSE)
 boxplot(data$koi_teq,outline=FALSE)
-boxplot(data$koi_insol)
+boxplot(data$koi_insol_err1, outline = FALSE)
+boxplot(data$koi_insol_err2, outline = FALSE)
+boxplot(data$koi_srad_err1, outline = FALSE)
+boxplot(data$koi_srad_err2, outline = FALSE)
+boxplot(data$koi_steff_err1, outline = FALSE)
+boxplot(data$koi_steff_err2, outline = FALSE)
+boxplot(data$koi_slogg_err1, outline = TRUE)
+boxplot(data$koi_slogg_err2, outline = TRUE)
+boxplot(data$ra, outline = TRUE)
+boxplot(data$dec, outline = TRUE)
+boxplot(data$koi_kepmag, outline = TRUE)
 
 
 ######################## ---------------------------- ############################3
@@ -239,24 +261,68 @@ test[!duplicated(test),]
 duplicated(test)
 nrow(test)
 #Item 9 - Eliminação de exemplos não necessários - estou na duvida de como fazer
-nrow(train)
-train[!duplicated(train),]
-nrow(train)
-unique(train)
 
 
-summary(train)
 
 
 #12 - Limpeza de dados
-#Limpeza de dados treino e teste
+#Limpeza de dados treino e teste 
+
+#Preenchimento dos dados
+summary(train$koi_score)
 for(i in 1:nrow(train)){
   if(is.na(train[i,3])){
     if(train[i,1] == "FALSE POSITIVE" && train[i,2] == "FALSE POSITIVE" ){
-      print("passou")
       train[i,3] <- 0.000
     }
+    else if(train[i,1] == "CONFIRMED" && train[i,2] == "CANDIDATE"){
+      train[i,3] <- 1.000
+      
+    }
     
+    else if(train[i,1] == "CANDIDATE" && train[i,2] == "CANDIDATE"){
+      train[i,3] <- 0.800
+      
+    }
+    
+    else if(train[i,1] == "CONFIRMED" && train[i,2] == "FALSE POSITIVE"){
+      train[i,3] <- 0.200
+      
+    }
+    
+  }
+  if(is.na(train[i, 10])){
+    train[i,10] = mean(train$koi_time0bk_err1,na.rm = TRUE)
+  }
+}
+
+summary(train$koi_time0bk_err1)
+boxplot(train$koi_time0bk_err1, ylab="koi_time0bk_err1" ,main="time",outline=TRUE)
+
+
+for(i in 1:nrow(test)){
+  if(is.na(test[i,3])){
+    if(test[i,1] == "FALSE POSITIVE" && test[i,2] == "FALSE POSITIVE" ){
+      test[i,3] <- 0.000
+    }
+    else if(test[i,1] == "CONFIRMED" && test[i,2] == "CANDIDATE"){
+      test[i,3] <- 1.000
+      
+    }
+    
+    else if(test[i,1] == "CANDIDATE" && test[i,2] == "CANDIDATE"){
+      test[i,3] <- 0.8000
+      
+    }
+    else if(test[i,1] == "CONFIRMED" && test[i,2] == "FALSE POSITIVE"){
+      test[i,3] <- 0.200
+      
+    }
+    
+    
+  }
+  if(is.na(test[i, 10])){
+    test[i,10] = mean(test$koi_time0bk_err1,na.rm = TRUE)
   }
 }
 
@@ -265,4 +331,28 @@ print(train[duplicated(train),])
 print(test[duplicated(test), ])
 
 
+
+#remoção de outliers
+
+
+
+
+#13 - Conversão de dados
+for(i in 1:nrow(train)){
+  if(train[i,2] == "CANDIDATE"){
+    train[i,2] = 1
+  }else if (train[i,2] == "FALSE POSITIVE"){
+    train[i,2] = 0
+  }
+}
+
+for(i in 1:nrow(test)){
+  if(test[i,2] == "CANDIDATE"){
+    test[i,2] = 1
+  }else if (test[i,2] == "FALSE POSITIVE"){
+    test[i,2] = 0
+  }
+}
+table(train)
+#14 - Redução de dimensionalidade
 
