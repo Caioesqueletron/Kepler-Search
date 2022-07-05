@@ -178,8 +178,8 @@ boxplot(data$koi_duration_err1,ylab="horas", main="Transit Duration[erro minimo]
 boxplot(data$koi_duration_err2,ylab="horas",main="Transit Duration[erro maximo]",outline=TRUE)
 boxplot(data$koi_depth_err1,ylab="ppm", main="Transit Depth[erro minimo]",outline=FALSE)
 boxplot(data$koi_depth_err2,ylab="ppm", main="Transit Dpeth[erro maximo]",outline=FALSE)
-boxplot(data$koi_prad_err1,outline=FALSE)
-boxplot(data$koi_prad_err2,outline=FALSE)
+boxplot(data$koi_prad_err1, ylab="earth radii", main="Planetary Radius[erro minimo]",outline=FALSE)
+boxplot(data$koi_prad_err2, ylab ="earth radii", main="Planetary Radius",outline=FALSE)
 boxplot(data$koi_teq,outline=FALSE)
 boxplot(data$koi_insol_err1, outline = FALSE)
 boxplot(data$koi_insol_err2, outline = FALSE)
@@ -221,6 +221,34 @@ for(row in atributesForLocation){
 }
 
 #Item 6 - Medidas de dispersão
+hist(data$koi_score, col="darkblue", border="black");
+hist(data$koi_period_err1, col="darkblue", border="black");
+hist(data$koi_period_err2, col="darkblue", border="black");
+hist(data$koi_time0bk_err1, col="darkblue", border="black");
+hist(data$koi_time0bk_err2, col="darkblue", border="black");
+hist(data$koi_impact_err1, col="darkblue", border="black");
+hist(data$koi_impact_err2, col="darkblue", border="black");
+hist(data$koi_duration_err1, col="darkblue", border="black");
+hist(data$koi_duration_err2, col="darkblue", border="black");
+hist(data$koi_prad_err1, col="darkblue", border="black");
+hist(data$koi_prad_err2, col="darkblue", border="black");
+hist(data$koi_teq, col="darkblue", border="black");
+hist(data$koi_insol_err1, col="darkblue", border="black");
+hist(data$koi_insol_err2, col="darkblue", border="black");
+hist(data$koi_srad_err1, col="darkblue", border="black");
+hist(data$koi_srad_err2, col="darkblue", border="black");
+hist(data$koi_steff_err1, col="darkblue", border="black");
+hist(data$koi_steff_err2, col="darkblue", border="black");
+hist(data$koi_slogg_err1, col="darkblue", border="black");
+hist(data$koi_slogg_err2, col="darkblue", border="black");
+hist(data$ra, col="darkblue", border="black");
+hist(data$dec, col="darkblue", border="black");
+hist(data$koi_kepmag, col="darkblue", border="black");
+hist(mtcars$mpg, col="darkblue", border="black");
+hist(mtcars$mpg, col="darkblue", border="black");
+hist(mtcars$mpg, col="darkblue", border="black");
+hist(mtcars$mpg, col="darkblue", border="black");
+hist(mtcars$mpg, col="darkblue", border="black");
 
 
 
@@ -260,9 +288,6 @@ nrow(test)
 test[!duplicated(test),]
 duplicated(test)
 nrow(test)
-#Item 9 - Eliminação de exemplos não necessários - estou na duvida de como fazer
-
-
 
 
 #12 - Limpeza de dados
@@ -321,6 +346,8 @@ for(i in 1:nrow(test)){
     
     
   }
+  #Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
+  #não há uma ideia dos seus comportamentos exatamente)
   if(is.na(test[i, 10])){
     test[i,10] = mean(test$koi_time0bk_err1,na.rm = TRUE)
   }
@@ -332,12 +359,14 @@ print(test[duplicated(test), ])
 
 
 
-#remoção de outliers
+#remoção de outliers do conjunto de treino e teste
+
 
 
 
 
 #13 - Conversão de dados
+#Conversão do atributo alvo de Simbolico para Númerico(Binário)
 for(i in 1:nrow(train)){
   if(train[i,2] == "CANDIDATE"){
     train[i,2] = 1
