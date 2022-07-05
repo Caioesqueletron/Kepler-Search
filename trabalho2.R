@@ -1,7 +1,7 @@
 library(readr)
 library(gridExtra)
 library(dplyr)
-library(ROSE)
+library(skyscapeR)    
 
 #Inicio e alguns tratamentos
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
@@ -113,10 +113,25 @@ getDesvioPadrao <- function(value){
   desvio <- sd(value, na.rm = TRUE)
   cat("\nDesvio Padrão = ", desvio)
   
+  
+}
+
+#Função para calcular a curtose
+getCurtose <- function(value){
+  curtose <- kurtosis(value,na.rm = TRUE)
+  cat("\nCurtose = ", curtose)
+  
+}
+
+#Função para calcular a obliquidade
+getObliquidade <-function(value){
+  obliquidade <- (value)
+  cat("\nObliquidade =", oliquidade)
 }
 
 atributesForLocation <- data.frame(data$koi_score, 
-                                   data$koi_period, 
+                                   data$koi_period_err1,
+                                   data$koi_period_err2, 
                                    data$koi_time0bk_err1,
                                    data$koi_time0bk_err2,
                                    data$koi_impact_err1,
@@ -233,7 +248,7 @@ hist(data$koi_duration_err2, col="darkblue", border="black");
 hist(data$koi_prad_err1, col="darkblue", border="black");
 hist(data$koi_prad_err2, col="darkblue", border="black");
 hist(data$koi_teq, col="darkblue", border="black");
-hist(data$koi_insol_err1, col="darkblue", border="black");
+hist(data$koi_insol_err1, col="darkblue", border="black", );
 hist(data$koi_insol_err2, col="darkblue", border="black");
 hist(data$koi_srad_err1, col="darkblue", border="black");
 hist(data$koi_srad_err2, col="darkblue", border="black");
@@ -244,12 +259,23 @@ hist(data$koi_slogg_err2, col="darkblue", border="black");
 hist(data$ra, col="darkblue", border="black");
 hist(data$dec, col="darkblue", border="black");
 hist(data$koi_kepmag, col="darkblue", border="black");
-hist(mtcars$mpg, col="darkblue", border="black");
-hist(mtcars$mpg, col="darkblue", border="black");
-hist(mtcars$mpg, col="darkblue", border="black");
-hist(mtcars$mpg, col="darkblue", border="black");
-hist(mtcars$mpg, col="darkblue", border="black");
 
+
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getCurtose(row)
+  i<- i+1
+  
+}
+
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getObliquidade(row)
+  i<- i+1
+  
+}
 
 
 #Item  7 - Separação de conjuntos de teste e treino
@@ -264,8 +290,6 @@ tabela2 <- table(test$koi_disposition)
 print(tabela2)
 
 #Item 8 - Eliminação de atributos não necessários
-testMatriz = as.matrix.data.frame(train)
-print(testMatriz)
 
 #removendo atributos desnecesários do datset de treino
 train$rowid<- NULL
@@ -274,7 +298,9 @@ train$kepler_name<- NULL
 train$kepoi_name<-NULL
 train$koi_teq_err1<-NULL
 train$koi_teq_err2<-NULL
-print(train)
+train$koi_tce_delivname<-NULL
+
+
 summary(train)
 
 #removendo atributos desnecessários do dataset de teste
@@ -284,6 +310,7 @@ test$kepler_name<- NULL
 test$kepoi_name<-NULL
 test$koi_teq_err1<-NULL
 test$koi_teq_err2<-NULL
+test$koi_tce_delivname<-NULL
 nrow(test)
 test[!duplicated(test),]
 duplicated(test)
@@ -291,7 +318,26 @@ nrow(test)
 
 
 #12 - Limpeza de dados
-#Limpeza de dados treino e teste 
+#Limpeza de dados treino e teste
+
+#Eliminação de dados inconscistentes
+
+for(i in 1:nrow(train)){
+  if(is.na(train[i,2])){
+    if(train[i,1] == "CONFIRMED" && train[i,2] == "FALSE POSITIVE" ){
+      train[i,] <- NULL
+    }
+  }
+}
+
+for(i in 1:nrow(test)){
+  if(is.na(test[i,2])){
+    if(test[i,1] == "CONFIRMED" && test[i,2] == "FALSE POSITIVE" ){
+      test[i,] <- NULL
+    }
+  }
+}
+
 
 #Preenchimento dos dados
 summary(train$koi_score)
@@ -315,14 +361,11 @@ for(i in 1:nrow(train)){
       
     }
     
+    
+    
   }
-  if(is.na(train[i, 10])){
-    train[i,10] = mean(train$koi_time0bk_err1,na.rm = TRUE)
-  }
+  
 }
-
-summary(train$koi_time0bk_err1)
-boxplot(train$koi_time0bk_err1, ylab="koi_time0bk_err1" ,main="time",outline=TRUE)
 
 
 for(i in 1:nrow(test)){
@@ -346,21 +389,35 @@ for(i in 1:nrow(test)){
     
     
   }
-  #Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
-  #não há uma ideia dos seus comportamentos exatamente)
-  if(is.na(test[i, 10])){
-    test[i,10] = mean(test$koi_time0bk_err1,na.rm = TRUE)
-  }
+ 
 }
+
 
 #Verificando dados duplicados
 print(train[duplicated(train),])
-print(test[duplicated(test), ])
+train <- train[!duplicated(train),]
+test <- test[!duplicated(test), ]
+print(train[duplicated(train),])
+
+#Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
+#não há uma ideia dos seus comportamentos exatamente)
+for(j in 8:33){
+  for(i in 1:nrow(train))
+  if(is.na(train[i,j])){
+    train[i,j] <- mean(train[,j],na.rm = TRUE)
+  }
+}
+
+for(j in 8:33){
+  for(i in 1:nrow(test))
+    if(is.na(test[i,j])){
+      test[i,j] <- mean(test[,j],na.rm = TRUE)
+    }
+}
 
 
-
-#remoção de outliers do conjunto de treino e teste
-
+summary(train)
+summary(test)
 
 
 
@@ -382,6 +439,36 @@ for(i in 1:nrow(test)){
     test[i,2] = 0
   }
 }
+
+#Padronização dos dados que não formam uma distribuição normal
+for(i in 1:nrow(train)){
+  if(train[i,2] == "CANDIDATE"){
+    train[i,2] = 1
+  }else if (train[i,2] == "FALSE POSITIVE"){
+    train[i,2] = 0
+  }
+}
+
+#Padronização dos dados
+#não há uma ideia dos seus comportamentos exatamente)
+for(j in 8:30){
+  for(i in 1:nrow(test)){
+      test[i,j] <- (test[i,j] - mean(test[,j],na.rm = TRUE))/sd(test[,j], na.rm = TRUE)
+    
+  }
+}
+
+for(j in 8:30){
+    for(i in 1:nrow(train)){
+      train[i,j] <- (train[i,j] - mean(train[,j],na.rm = TRUE))/sd(train[,j], na.rm = TRUE)
+      
+    }
+}
+    
+table(train$koi_pdisposition)
+table(test$koi_pdisposition)
+
 table(train)
 #14 - Redução de dimensionalidade
-
+mtcars.pca <- prcomp(train[,c(7)], center = TRUE,scale. = TRUE)
+summary(mtcars.pca)
