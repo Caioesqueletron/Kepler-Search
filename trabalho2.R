@@ -2,6 +2,8 @@ library(readr)
 library(gridExtra)
 library(dplyr)
 library(skyscapeR)    
+library(e1071)
+library(FactoMineR)
 
 #Inicio e alguns tratamentos
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
@@ -125,8 +127,8 @@ getCurtose <- function(value){
 
 #Função para calcular a obliquidade
 getObliquidade <-function(value){
-  obliquidade <- (value)
-  cat("\nObliquidade =", oliquidade)
+  obliquidade <- skewness(value, na.rm = TRUE)
+  cat("\nObliquidade =", obliquidade)
 }
 
 atributesForLocation <- data.frame(data$koi_score, 
@@ -152,7 +154,6 @@ atributesForLocation <- data.frame(data$koi_score,
                                    data$koi_steff_err2,
                                    data$koi_srad_err1,
                                    data$koi_srad_err2,
-                                   data$koi_tce_plnt_num,
                                    data$ra,
                                    data$dec,
                                   data$koi_kepmag)
@@ -183,30 +184,49 @@ for(row in atributesModeForLocation){
 
 #Printagem dos boxplots
 boxplot(data$koi_score, ylab = "Score", main = "Disposition Score")
-boxplot(data$koi_period_err1, ylab= "dias", main="Periodo Orbtital[erro minimo]",outline=FALSE)
-boxplot(data$koi_period_err2, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=FALSE)
-boxplot(data$koi_time0bk_err1, ylab="BJD" ,main="Transit Epoch[erro minimo]",outline=TRUE)
-boxplot(data$koi_time0bk_err2, ylab="BJD" ,main="Transit Epoch[erro maximo]",outline=TRUE)
-boxplot(data$koi_impact_err1, main="Impact Parameter[erro minimo]" )
-boxplot(data$koi_impact_err2, main="Impact Parameter[erro maximo]")
-boxplot(data$koi_duration_err1,ylab="horas", main="Transit Duration[erro minimo]", outline=TRUE)
-boxplot(data$koi_duration_err2,ylab="horas",main="Transit Duration[erro maximo]",outline=TRUE)
-boxplot(data$koi_depth_err1,ylab="ppm", main="Transit Depth[erro minimo]",outline=FALSE)
-boxplot(data$koi_depth_err2,ylab="ppm", main="Transit Dpeth[erro maximo]",outline=FALSE)
-boxplot(data$koi_prad_err1, ylab="earth radii", main="Planetary Radius[erro minimo]",outline=FALSE)
-boxplot(data$koi_prad_err2, ylab ="earth radii", main="Planetary Radius",outline=FALSE)
-boxplot(data$koi_teq,outline=FALSE)
-boxplot(data$koi_insol_err1, outline = FALSE)
-boxplot(data$koi_insol_err2, outline = FALSE)
-boxplot(data$koi_srad_err1, outline = FALSE)
-boxplot(data$koi_srad_err2, outline = FALSE)
-boxplot(data$koi_steff_err1, outline = FALSE)
-boxplot(data$koi_steff_err2, outline = FALSE)
-boxplot(data$koi_slogg_err1, outline = TRUE)
-boxplot(data$koi_slogg_err2, outline = TRUE)
-boxplot(data$ra, outline = TRUE)
-boxplot(data$dec, outline = TRUE)
-boxplot(data$koi_kepmag, outline = TRUE)
+boxplot(data$koi_period_err1, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=FALSE)
+boxplot(data$koi_period_err2, ylab= "dias", main="Periodo Orbtital[erro minimo]",outline=FALSE)
+boxplot(data$koi_time0bk_err1, ylab="BJD" ,main="Transit Epoch[erro maximo]",outline=FALSE)
+boxplot(data$koi_time0bk_err2, ylab="BJD" ,main="Transit Epoch[erro minimo]",outline=FALSE)
+boxplot(data$koi_impact_err1, main="Impact Parameter[erro maximo]", outline = FALSE )
+boxplot(data$koi_impact_err2, main="Impact Parameter[erro minimo]", outline = FALSE)
+boxplot(data$koi_duration_err1,ylab="horas", main="Transit Duration[erro maximo]", outline=FALSE)
+boxplot(data$koi_duration_err2,ylab="horas",main="Transit Duration[erro minimo]",outline=FALSE)
+boxplot(data$koi_depth_err1,ylab="ppm", main="Transit Depth[erro maximo]",outline=FALSE)
+boxplot(data$koi_depth_err2,ylab="ppm", main="Transit Depth[erro minimo]",outline=FALSE)
+boxplot(data$koi_prad_err1, ylab="earth radii", main="Planetary Radius[erro maximo]",outline=FALSE)
+boxplot(data$koi_prad_err2, ylab ="earth radii", main="Planetary Radius[erro minimo]",outline=FALSE)
+boxplot(data$koi_teq, ylab="Kelvin", main="Equilibrium Temperature",outline=FALSE)
+boxplot(data$koi_insol_err1, ylab="Earth flux", main="Insolation Flux[erro maximo]", outline = FALSE)
+boxplot(data$koi_insol_err2, ylab="Earth flux", main="Insolation Flux[erro minimo]", outline = FALSE)
+boxplot(data$koi_srad_err1, ylab="solar radii", main="Stellar Radius[erro maximo]", outline = FALSE)
+boxplot(data$koi_srad_err2, ylab="solar radii", main="Stellar Radius[erro minimo]", outline = FALSE)
+boxplot(data$koi_steff_err1,  ylab="Kelvin", main="Stellar Effective Temperature[erro maximo]",outline = FALSE)
+boxplot(data$koi_steff_err2, ylab="Kelvin", main="Stellar Effective Temperature[erro minimo]", outline = FALSE)
+boxplot(data$koi_slogg_err1, ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro minimo]", outline = FALSE)
+boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro maximo]",outline = FALSE)
+boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro maximo]",outline = FALSE)
+boxplot(data$ra,  ylab="deg", main="RA",outline = FALSE)
+boxplot(data$dec,  ylab="deg", main="Dec",outline = FALSE)
+boxplot(data$koi_kepmag, ylab="mag", main="Kepler-band", outline = FALSE)
+
+#remoção premeditada de outliers antes da speração para dataset de teste e treino
+
+
+data <- subset(data,data$koi_period_err1 < 800 )
+data <- subset(data,data$koi_time0bk_err1 < 700 )
+data <- subset(data,data$koi_impact_err1 < 90)
+data <- subset(data,data$koi_impact_err1 < 90)
+data <- subset(data, data$koi_duration_err1 < 60)
+data <- subset(data, data$koi_depth_err1 < 1000000)
+data <- subset(data, data$koi_prad_err1 < 4000)
+data <- subset(data, data$koi_teq < 5000)
+data <- subset(data, data$koi_insol_err1 < 3e+05)
+data <- subset(data, data$koi_slogg_err1 > 2)
+data <- subset(data, data$koi_kepmag < 18 & data$koi_kepmag > 8)
+
+boxplot(data$koi_kepmag, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=TRUE)
+
 
 
 ######################## ---------------------------- ############################3
@@ -237,28 +257,28 @@ for(row in atributesForLocation){
 
 #Item 6 - Medidas de dispersão
 hist(data$koi_score, col="darkblue", border="black");
-hist(data$koi_period_err1, col="darkblue", border="black");
-hist(data$koi_period_err2, col="darkblue", border="black");
-hist(data$koi_time0bk_err1, col="darkblue", border="black");
-hist(data$koi_time0bk_err2, col="darkblue", border="black");
-hist(data$koi_impact_err1, col="darkblue", border="black");
-hist(data$koi_impact_err2, col="darkblue", border="black");
-hist(data$koi_duration_err1, col="darkblue", border="black");
-hist(data$koi_duration_err2, col="darkblue", border="black");
-hist(data$koi_prad_err1, col="darkblue", border="black");
-hist(data$koi_prad_err2, col="darkblue", border="black");
-hist(data$koi_teq, col="darkblue", border="black");
-hist(data$koi_insol_err1, col="darkblue", border="black", );
-hist(data$koi_insol_err2, col="darkblue", border="black");
-hist(data$koi_srad_err1, col="darkblue", border="black");
-hist(data$koi_srad_err2, col="darkblue", border="black");
-hist(data$koi_steff_err1, col="darkblue", border="black");
-hist(data$koi_steff_err2, col="darkblue", border="black");
-hist(data$koi_slogg_err1, col="darkblue", border="black");
-hist(data$koi_slogg_err2, col="darkblue", border="black");
-hist(data$ra, col="darkblue", border="black");
-hist(data$dec, col="darkblue", border="black");
-hist(data$koi_kepmag, col="darkblue", border="black");
+hist(data$koi_period_err1, col="darkblue", main = , border="black",breaks =500 ); #reescala não distribuição dos dadso
+hist(data$koi_period_err2, col="darkblue", main = , border="black");
+hist(data$koi_time0bk_err1, col="darkblue", main = , border="black",breaks =200);
+hist(data$koi_time0bk_err2, col="darkblue", main = ,border="black", breaks = 200);#obliquidade positiva fazer reescala
+hist(data$koi_impact_err1, col="darkblue", main = ,border="black");
+hist(data$koi_impact_err2, col="darkblue", main = ,border="black");
+hist(data$koi_duration_err1, col="darkblue", main = ,border="black");
+hist(data$koi_duration_err2, col="darkblue", main = ,border="black");
+hist(data$koi_prad_err1, col="darkblue", main = ,border="black");
+hist(data$koi_prad_err2, col="darkblue", main = ,border="black");
+hist(data$koi_teq, col="darkblue", main = ,border="black");
+hist(data$koi_insol_err1, col="darkblue", main = ,border="black", );
+hist(data$koi_insol_err2, col="darkblue", main = ,border="black");
+hist(data$koi_srad_err1, col="darkblue", main = ,border="black");
+hist(data$koi_srad_err2, col="darkblue", main = ,border="black");
+hist(data$koi_steff_err1, col="darkblue", main = , border="black");
+hist(data$koi_steff_err2, col="darkblue", main = ,border="black");
+hist(data$koi_slogg_err1, col="darkblue", main = ,border="black");#se não for colocar reescala
+hist(data$koi_slogg_err2, col="darkblue", main = ,border="black");
+hist(data$ra, col="darkblue", main= "RA", border="black");
+hist(data$dec, col="darkblue", main="DEC", border="black");
+hist(data$koi_kepmag, col="darkblue", main="Kepler Band",border="black");
 
 
 i<-0
@@ -291,7 +311,7 @@ print(tabela2)
 
 #Item 8 - Eliminação de atributos não necessários
 
-#removendo atributos desnecesários do datset de treino
+#removendo atributos desnecesários do dataset de treino
 train$rowid<- NULL
 train$kepid<- NULL
 train$kepler_name<- NULL
@@ -299,6 +319,7 @@ train$kepoi_name<-NULL
 train$koi_teq_err1<-NULL
 train$koi_teq_err2<-NULL
 train$koi_tce_delivname<-NULL
+train$koi_tce_plnt_num <- NULL
 
 
 summary(train)
@@ -311,6 +332,7 @@ test$kepoi_name<-NULL
 test$koi_teq_err1<-NULL
 test$koi_teq_err2<-NULL
 test$koi_tce_delivname<-NULL
+test$koi_tce_plnt_num <- NULL
 nrow(test)
 test[!duplicated(test),]
 duplicated(test)
@@ -401,14 +423,14 @@ print(train[duplicated(train),])
 
 #Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
 #não há uma ideia dos seus comportamentos exatamente)
-for(j in 8:33){
+for(j in 8:32){
   for(i in 1:nrow(train))
   if(is.na(train[i,j])){
     train[i,j] <- mean(train[,j],na.rm = TRUE)
   }
 }
 
-for(j in 8:33){
+for(j in 8:32){
   for(i in 1:nrow(test))
     if(is.na(test[i,j])){
       test[i,j] <- mean(test[,j],na.rm = TRUE)
@@ -440,7 +462,7 @@ for(i in 1:nrow(test)){
   }
 }
 
-#Padronização dos dados que não formam uma distribuição normal
+#Padronização dos dados que  formam uma distribuição normal
 for(i in 1:nrow(train)){
   if(train[i,2] == "CANDIDATE"){
     train[i,2] = 1
@@ -450,25 +472,64 @@ for(i in 1:nrow(train)){
 }
 
 #Padronização dos dados
-#não há uma ideia dos seus comportamentos exatamente)
-for(j in 8:30){
+for(j in 30:32){
   for(i in 1:nrow(test)){
       test[i,j] <- (test[i,j] - mean(test[,j],na.rm = TRUE))/sd(test[,j], na.rm = TRUE)
     
   }
 }
 
-for(j in 8:30){
-    for(i in 1:nrow(train)){
-      train[i,j] <- (train[i,j] - mean(train[,j],na.rm = TRUE))/sd(train[,j], na.rm = TRUE)
-      
-    }
-}
+for(j in 30:32){
+  for(i in 1:nrow(train)){
+    train[i,j] <- (train[i,j] - mean(train[,j],na.rm = TRUE))/sd(train[,j], na.rm = TRUE)
     
-table(train$koi_pdisposition)
-table(test$koi_pdisposition)
+  }
+}
 
-table(train)
+
+
+#Reescala dos dados
+for(j in 7:30){
+  for(i in 1:nrow(test)){
+    test[i,j] <- ((test[i,j] - min(test[,j])))/(max(test[,j]) - min(test[,j]))
+    
+  }
+}
+for(j in 7:30){
+  for(i in 1:nrow(train)){
+    train[i,j] <- ((train[i,j] - min(train[,j])))/(max(train[,j]) - min(train[,j]))
+    
+  }
+}
+
+summary(train)
+summary(test)
+
+ 
+
 #14 - Redução de dimensionalidade
-mtcars.pca <- prcomp(train[,c(7)], center = TRUE,scale. = TRUE)
-summary(mtcars.pca)
+
+#Utilização do PCA
+train$koi_disposition <- NULL
+test$koi_disposition <- NULL
+targetTrain = train$koi_pdisposition
+targetTest = test$koi_pdisposition
+train$koi_pdisposition <- NULL
+test$koi_pdisposition <- NULL
+train.pca <-  prcomp(train, center = TRUE, rank. = 20)
+pc.use <- 3 # explains 93% of variance
+trunc <- train.pca
+pc.use <- 3 # explains 93% of variance
+trunc <- train.pca$x[,1:pc.use] %*% t(train.pca$rotation[,1:pc.use])
+
+#and add the center (and re-scale) back to data
+if(train.pca$scale != FALSE){
+  trunc <- scale(trunc, center = FALSE , scale=1/train.pca$scale)
+}
+if(train.pca$center != FALSE){
+  trunc <- scale(trunc, center = -1 * train.pca$center, scale=FALSE)
+}
+dim(trunc); dim(train)
+summary(trunc)
+test.pca <-  prcomp(test[, -1], center = TRUE,scale. = TRUE,rank. = 20)
+print(train.pca)
