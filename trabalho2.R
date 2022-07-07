@@ -206,14 +206,13 @@ boxplot(data$koi_srad_err1, ylab="solar radii", main="Stellar Radius[erro maximo
 boxplot(data$koi_srad_err2, ylab="solar radii", main="Stellar Radius[erro minimo]", outline = FALSE)
 boxplot(data$koi_steff_err1,  ylab="Kelvin", main="Stellar Effective Temperature[erro maximo]",outline = FALSE)
 boxplot(data$koi_steff_err2, ylab="Kelvin", main="Stellar Effective Temperature[erro minimo]", outline = FALSE)
-boxplot(data$koi_slogg_err1, ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro minimo]", outline = FALSE)
-boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro maximo]",outline = FALSE)
-boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro maximo]",outline = FALSE)
+boxplot(data$koi_slogg_err1, ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro maximo]", outline = FALSE)
+boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravity[erro minimo]",outline = FALSE)
 boxplot(data$ra,  ylab="deg", main="RA",outline = FALSE)
 boxplot(data$dec,  ylab="deg", main="Dec",outline = FALSE)
 boxplot(data$koi_kepmag, ylab="mag", main="Kepler-band", outline = FALSE)
 
-#remoção premeditada de outliers antes da speração para dataset de teste e treino
+#remoção premeditada de outliers antes da separação para dataset de teste e treino
 
 
 data <- subset(data,data$koi_period_err1 < 800 )
@@ -259,30 +258,38 @@ for(row in atributesForLocation){
 }
 
 #Item 6 - Medidas de dispersão
-hist(data$koi_score, col="darkblue", border="black");
-hist(data$koi_period_err1, col="darkblue", main = "" , border="black",breaks =500 ); #reescala não distribuição dos dadso
-hist(data$koi_period_err2, col="darkblue", main = "" , border="black");
-hist(data$koi_time0bk_err1, col="darkblue", main = "" , border="black",breaks =200);
-hist(data$koi_time0bk_err2, col="darkblue", main ="" ,border="black", breaks = 200);#obliquidade positiva fazer reescala
-hist(data$koi_impact_err1, col="darkblue", main ="" ,border="black");
-hist(data$koi_impact_err2, col="darkblue", main ="" ,border="black");
-hist(data$koi_duration_err1, col="darkblue", main ="" ,border="black");
-hist(data$koi_duration_err2, col="darkblue", main = "",border="black");
-hist(data$koi_prad_err1, col="darkblue", main ="" ,border="black");
-hist(data$koi_prad_err2, col="darkblue", main ="" ,border="black");
-hist(data$koi_teq, col="darkblue", main ="" ,border="black");
-hist(data$koi_insol_err1, col="darkblue", main ="" ,border="black", );
-hist(data$koi_insol_err2, col="darkblue", main ="" ,border="black");
-hist(data$koi_srad_err1, col="darkblue", main ="" ,border="black");
-hist(data$koi_srad_err2, col="darkblue", main ="" ,border="black");
-hist(data$koi_steff_err1, col="darkblue", main = "", border="black");
-hist(data$koi_steff_err2, col="darkblue", main ="" ,border="black");
-hist(data$koi_slogg_err1, col="darkblue", main ="" ,border="black");#se não for colocar reescala
-hist(data$koi_slogg_err2, col="darkblue", main = "",border="black");
-hist(data$ra, col="darkblue", main= "RA", border="black");
-hist(data$dec, col="darkblue", main="DEC", border="black");
-hist(data$koi_kepmag, col="darkblue", main="Kepler Band",border="black");
+hist(data$koi_score, col="white",main = "Disposition Score", border="black", breaks = 100);
+hist(data$koi_period_err1, col="white", main = "Periodo Orbtital[erro maximo]" , border="black",breaks =100 ); #reescala não distribuição dos dadso
+hist(data$koi_period_err2, col="white", main = "Periodo Orbtital[erro minimo]" , border="black", breaks =100);
+hist(data$koi_time0bk_err1, col="white", main ="Transit Epoch[erro maximo]" ,border="black", breaks = 100);#obliquidade positiva fazer reescala
+hist(data$koi_time0bk_err2, col="white", main ="Transit Epoch[erro minimo]" ,border="black", breaks = 100);#obliquidade positiva fazer reescala
+hist(data$koi_impact_err1, col="white", main ="Impact Parameter[erro maximo]" ,border="black", breaks = 100);
+hist(data$koi_impact_err2, col="white", main ="Impact Parameter[erro minimo]" ,border="black", breaks = 100);
+hist(data$koi_depth_err1, col="white", main ="Transit Depth[erro maximo]" ,border="black", breaks = 100);
+hist(data$koi_depth_err2, col="white", main ="Transit Depth[erro minimo]" ,border="black", breaks = 100);
+hist(data$koi_duration_err1, col="white", main ="Transit Duration[erro maximo]" ,border="black", breaks = 100);
+hist(data$koi_duration_err2, col="white", main = "Transit Duration[erro minimo]",border="black", breaks = 100);
+hist(data$koi_prad_err1, col="white", main ="Planetary Radius[erro maximo]" ,border="black", breaks  = 100);
+hist(data$koi_prad_err2, col="white", main ="Planetary Radius[erro minimo]" ,border="black", breaks = 100);
+hist(data$koi_teq, col="white", main ="Equilibrium Temperature" ,border="black", breaks = 100);
+hist(data$koi_insol_err1, col="white", main ="Insolation Flux[erro maximo]" ,border="black", breaks = 100);
+hist(data$koi_insol_err2, col="white", main ="Insolation Flux[erro minimo]" ,border="black",breaks = 100);
+hist(data$koi_srad_err1, col="white", main ="Stellar Radius[erro maximo]" ,border="black", breaks = 100);
+hist(data$koi_srad_err2, col="white", main ="Stellar Radius [erro minimo]" ,border="black", breaks = 100);
+hist(data$koi_steff_err1, col="white", main = "Stellar Effective Temperature[erro maximo]", border="black", breaks = 100);
+hist(data$koi_steff_err2, col="white", main ="Stellar Effective Temperature[erro minimo]" ,border="black", breaks = 100);
+hist(data$koi_slogg_err1, col="white", main ="Stellar Surface Gravity[erro maximo]" ,border="black", breaks = 100);#se não for colocar reescala
+hist(data$koi_slogg_err2, col="white", main = "Stellar Surface Gravity[erro minimo]",border="black", breaks = 100);
+hist(data$ra, col="white", main= "RA", border="black", breaks = 100);
+hist(data$dec, col="white", main="DEC", border="black", breaks = 100);
+hist(data$koi_kepmag, col="white", main="Kepler Band",border="black", breaks = 100);
 
+#Histogramas para os atributos quantitativos:
+hist(data$koi_fpflag_nt, col="white", main="Not Transit-Like Flag",border="black", breaks = 100);
+hist(data$koi_fpflag_co, col="white", main="Centroid Offset Flag",border="black", breaks = 100);
+hist(data$koi_fpflag_ss, col="white", main="Stellar Eclipse Flag",border="black", breaks = 100);
+hist(data$koi_fpflag_ec, col="white", main="Ephemeris Match Indicates Contamination Flag",border="black", breaks = 100);
+hist(data$koi_tce_plnt_num, col="white", main="Número do Planeta TCE federado ao KOI",border="black", breaks = 100);
 
 i<-0
 for(row in atributesForLocation){
@@ -302,7 +309,7 @@ for(row in atributesForLocation){
 
 ######################## ---------------------------- ############################3
 
-
+table(data$koi_pdisposition)
 #Item  7 - Separação de conjuntos de teste e treino
 sample <- sample(c(rep(0, 0.8 * nrow(data)),  
                    rep(1, 0.2 * nrow(data))))
@@ -429,6 +436,7 @@ print(train[duplicated(train),])
 train <- train[!duplicated(train),]
 test <- test[!duplicated(test), ]
 print(train[duplicated(train),])
+print(test[duplicated(test),])
 
 #Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
 #não há uma ideia dos seus comportamentos exatamente)
@@ -529,10 +537,9 @@ targetTest = test$koi_pdisposition
 train$koi_pdisposition <- NULL
 test$koi_pdisposition <- NULL
 
-train1 <-princomp(train)
-train1$loadings
+
 train.pca <-  prcomp(train, center = TRUE, scale. = FALSE)
-train.pca$loadings
 summary(train.pca)
-test.pca <-  prcomp(test[, -1], center = TRUE,scale. = TRUE,rank. = 20)
+test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE)
 print(train.pca)
+print(test.pca)
