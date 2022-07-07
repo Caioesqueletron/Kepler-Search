@@ -541,3 +541,5 @@ newTrainSet <- train.pca$x
 table(targetTrain)
 test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE, rank = 10)
 newTestSet <- test.pca$x
+
+#fazer gráficos a respeito dos novos datasets
