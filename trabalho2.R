@@ -534,12 +534,10 @@ train$koi_disposition <- NULL
 test$koi_disposition <- NULL
 targetTrain = train$koi_pdisposition
 targetTest = test$koi_pdisposition
-train$koi_pdisposition <- NULL
-test$koi_pdisposition <- NULL
 
 
-train.pca <-  prcomp(train, center = TRUE, scale. = FALSE)
-summary(train.pca)
-test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE)
-print(train.pca)
-print(test.pca)
+train.pca <-  prcomp(train[, -1], center = TRUE, scale. = FALSE, rank. = 10)
+newTrainSet <- train.pca$x
+table(targetTrain)
+test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE, rank = 10)
+newTestSet <- test.pca$x
