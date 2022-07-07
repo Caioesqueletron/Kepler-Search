@@ -11,6 +11,7 @@ data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
 summary(data)
 
 table(data$koi_disposition)
+######################## ---------------------------- ############################3
 
 #Tratamento das colunas de erros
 
@@ -65,6 +66,7 @@ table(target)
 sample(data)
 unique(data$koi_duration)
 
+######################## ---------------------------- ############################3
 
 # 4 - Exploração dos dados atraves de medidas de localidade
 
@@ -162,7 +164,8 @@ atributesModeForLocation <- data.frame(data$koi_disposition,
                                       data$koi_fpflag_nt,
                                       data$koi_fpflag_ss,
                                       data$koi_fpflag_co,
-                                      data$koi_fpflag_ec)
+                                      data$koi_fpflag_ec,
+                                      data$koi_tce_plnt_num)
 
 #Media, mediana e quartis para os dados quantitativos
 i<-0
@@ -257,25 +260,25 @@ for(row in atributesForLocation){
 
 #Item 6 - Medidas de dispersão
 hist(data$koi_score, col="darkblue", border="black");
-hist(data$koi_period_err1, col="darkblue", main = , border="black",breaks =500 ); #reescala não distribuição dos dadso
-hist(data$koi_period_err2, col="darkblue", main = , border="black");
-hist(data$koi_time0bk_err1, col="darkblue", main = , border="black",breaks =200);
-hist(data$koi_time0bk_err2, col="darkblue", main = ,border="black", breaks = 200);#obliquidade positiva fazer reescala
-hist(data$koi_impact_err1, col="darkblue", main = ,border="black");
-hist(data$koi_impact_err2, col="darkblue", main = ,border="black");
-hist(data$koi_duration_err1, col="darkblue", main = ,border="black");
-hist(data$koi_duration_err2, col="darkblue", main = ,border="black");
-hist(data$koi_prad_err1, col="darkblue", main = ,border="black");
-hist(data$koi_prad_err2, col="darkblue", main = ,border="black");
-hist(data$koi_teq, col="darkblue", main = ,border="black");
-hist(data$koi_insol_err1, col="darkblue", main = ,border="black", );
-hist(data$koi_insol_err2, col="darkblue", main = ,border="black");
-hist(data$koi_srad_err1, col="darkblue", main = ,border="black");
-hist(data$koi_srad_err2, col="darkblue", main = ,border="black");
-hist(data$koi_steff_err1, col="darkblue", main = , border="black");
-hist(data$koi_steff_err2, col="darkblue", main = ,border="black");
-hist(data$koi_slogg_err1, col="darkblue", main = ,border="black");#se não for colocar reescala
-hist(data$koi_slogg_err2, col="darkblue", main = ,border="black");
+hist(data$koi_period_err1, col="darkblue", main = "" , border="black",breaks =500 ); #reescala não distribuição dos dadso
+hist(data$koi_period_err2, col="darkblue", main = "" , border="black");
+hist(data$koi_time0bk_err1, col="darkblue", main = "" , border="black",breaks =200);
+hist(data$koi_time0bk_err2, col="darkblue", main ="" ,border="black", breaks = 200);#obliquidade positiva fazer reescala
+hist(data$koi_impact_err1, col="darkblue", main ="" ,border="black");
+hist(data$koi_impact_err2, col="darkblue", main ="" ,border="black");
+hist(data$koi_duration_err1, col="darkblue", main ="" ,border="black");
+hist(data$koi_duration_err2, col="darkblue", main = "",border="black");
+hist(data$koi_prad_err1, col="darkblue", main ="" ,border="black");
+hist(data$koi_prad_err2, col="darkblue", main ="" ,border="black");
+hist(data$koi_teq, col="darkblue", main ="" ,border="black");
+hist(data$koi_insol_err1, col="darkblue", main ="" ,border="black", );
+hist(data$koi_insol_err2, col="darkblue", main ="" ,border="black");
+hist(data$koi_srad_err1, col="darkblue", main ="" ,border="black");
+hist(data$koi_srad_err2, col="darkblue", main ="" ,border="black");
+hist(data$koi_steff_err1, col="darkblue", main = "", border="black");
+hist(data$koi_steff_err2, col="darkblue", main ="" ,border="black");
+hist(data$koi_slogg_err1, col="darkblue", main ="" ,border="black");#se não for colocar reescala
+hist(data$koi_slogg_err2, col="darkblue", main = "",border="black");
 hist(data$ra, col="darkblue", main= "RA", border="black");
 hist(data$dec, col="darkblue", main="DEC", border="black");
 hist(data$koi_kepmag, col="darkblue", main="Kepler Band",border="black");
@@ -297,6 +300,8 @@ for(row in atributesForLocation){
   
 }
 
+######################## ---------------------------- ############################3
+
 
 #Item  7 - Separação de conjuntos de teste e treino
 sample <- sample(c(rep(0, 0.8 * nrow(data)),  
@@ -308,6 +313,9 @@ print(tabela)
 test  <- data[sample == 1, ]
 tabela2 <- table(test$koi_disposition)
 print(tabela2)
+
+######################## ---------------------------- ############################3
+
 
 #Item 8 - Eliminação de atributos não necessários
 
@@ -337,6 +345,7 @@ nrow(test)
 test[!duplicated(test),]
 duplicated(test)
 nrow(test)
+######################## ---------------------------- ############################3
 
 
 #12 - Limpeza de dados
@@ -442,6 +451,8 @@ summary(train)
 summary(test)
 
 
+######################## ---------------------------- ############################3
+
 
 
 #13 - Conversão de dados
@@ -505,7 +516,8 @@ for(j in 7:30){
 summary(train)
 summary(test)
 
- 
+######################## ---------------------------- ############################3
+
 
 #14 - Redução de dimensionalidade
 
@@ -516,20 +528,11 @@ targetTrain = train$koi_pdisposition
 targetTest = test$koi_pdisposition
 train$koi_pdisposition <- NULL
 test$koi_pdisposition <- NULL
-train.pca <-  prcomp(train, center = TRUE, rank. = 20)
-pc.use <- 3 # explains 93% of variance
-trunc <- train.pca
-pc.use <- 3 # explains 93% of variance
-trunc <- train.pca$x[,1:pc.use] %*% t(train.pca$rotation[,1:pc.use])
 
-#and add the center (and re-scale) back to data
-if(train.pca$scale != FALSE){
-  trunc <- scale(trunc, center = FALSE , scale=1/train.pca$scale)
-}
-if(train.pca$center != FALSE){
-  trunc <- scale(trunc, center = -1 * train.pca$center, scale=FALSE)
-}
-dim(trunc); dim(train)
-summary(trunc)
+train1 <-princomp(train)
+train1$loadings
+train.pca <-  prcomp(train, center = TRUE, scale. = FALSE)
+train.pca$loadings
+summary(train.pca)
 test.pca <-  prcomp(test[, -1], center = TRUE,scale. = TRUE,rank. = 20)
 print(train.pca)
