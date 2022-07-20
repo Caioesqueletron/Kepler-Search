@@ -4,6 +4,10 @@ library(dplyr)
 library(skyscapeR)    
 library(e1071)
 library(FactoMineR)
+library(RSNNS)
+library(class)
+library(tree)
+
 
 #Inicio e alguns tratamentos
 data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
@@ -212,21 +216,6 @@ boxplot(data$ra,  ylab="deg", main="RA",outline = FALSE)
 boxplot(data$dec,  ylab="deg", main="Dec",outline = FALSE)
 boxplot(data$koi_kepmag, ylab="mag", main="Kepler-band", outline = FALSE)
 
-#remoção premeditada de outliers antes da separação para dataset de teste e treino
-
-
-data <- subset(data,data$koi_period_err1 < 800 )
-data <- subset(data,data$koi_time0bk_err1 < 700 )
-data <- subset(data,data$koi_impact_err1 < 90)
-data <- subset(data,data$koi_impact_err1 < 90)
-data <- subset(data, data$koi_duration_err1 < 60)
-data <- subset(data, data$koi_depth_err1 < 1000000)
-data <- subset(data, data$koi_prad_err1 < 4000)
-data <- subset(data, data$koi_teq < 5000)
-data <- subset(data, data$koi_insol_err1 < 3e+05)
-data <- subset(data, data$koi_slogg_err1 > 2)
-data <- subset(data, data$koi_kepmag < 18 & data$koi_kepmag > 8)
-
 boxplot(data$koi_kepmag, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=TRUE)
 
 
@@ -327,6 +316,19 @@ print(tabela2)
 #Item 8 - Eliminação de atributos não necessários
 
 #removendo atributos desnecesários do dataset de treino
+train <- subset(train,train$koi_period_err1 < 800 )
+train <- subset(train,train$koi_time0bk_err1 < 700 )
+train <- subset(train,train$koi_impact_err1 < 90)
+train <- subset(train,train$koi_impact_err1 < 90)
+train <- subset(train, train$koi_duration_err1 < 60)
+train <- subset(train, train$koi_depth_err1 < 1000000)
+train <- subset(train, train$koi_prad_err1 < 4000)
+train <- subset(train, train$koi_teq < 5000)
+train <- subset(train, train$koi_insol_err1 < 3e+05)
+train <- subset(train, train$koi_slogg_err1 > 2)
+train <- subset(train, train$koi_kepmag < 18 & train$koi_kepmag > 8)
+
+
 train$rowid<- NULL
 train$kepid<- NULL
 train$kepler_name<- NULL
@@ -348,37 +350,22 @@ test$koi_teq_err1<-NULL
 test$koi_teq_err2<-NULL
 test$koi_tce_delivname<-NULL
 test$koi_tce_plnt_num <- NULL
-nrow(test)
-test[!duplicated(test),]
-duplicated(test)
-nrow(test)
+
 ######################## ---------------------------- ############################3
 
 
 #12 - Limpeza de dados
-#Limpeza de dados treino e teste
+
 
 #Eliminação de dados inconscistentes
 
-for(i in 1:nrow(train)){
-  if(is.na(train[i,2])){
-    if(train[i,1] == "CONFIRMED" && train[i,2] == "FALSE POSITIVE" ){
-      train[i,] <- NULL
-    }
-  }
-}
+train <- na.omit(train)
 
-for(i in 1:nrow(test)){
-  if(is.na(test[i,2])){
-    if(test[i,1] == "CONFIRMED" && test[i,2] == "FALSE POSITIVE" ){
-      test[i,] <- NULL
-    }
-  }
-}
 
 
 #Preenchimento dos dados
 summary(train$koi_score)
+
 for(i in 1:nrow(train)){
   if(is.na(train[i,3])){
     if(train[i,1] == "FALSE POSITIVE" && train[i,2] == "FALSE POSITIVE" ){
@@ -406,57 +393,15 @@ for(i in 1:nrow(train)){
 }
 
 
-for(i in 1:nrow(test)){
-  if(is.na(test[i,3])){
-    if(test[i,1] == "FALSE POSITIVE" && test[i,2] == "FALSE POSITIVE" ){
-      test[i,3] <- 0.000
-    }
-    else if(test[i,1] == "CONFIRMED" && test[i,2] == "CANDIDATE"){
-      test[i,3] <- 1.000
-      
-    }
-    
-    else if(test[i,1] == "CANDIDATE" && test[i,2] == "CANDIDATE"){
-      test[i,3] <- 0.8000
-      
-    }
-    else if(test[i,1] == "CONFIRMED" && test[i,2] == "FALSE POSITIVE"){
-      test[i,3] <- 0.200
-      
-    }
-    
-    
-  }
- 
-}
-
 
 #Verificando dados duplicados
 print(train[duplicated(train),])
 train <- train[!duplicated(train),]
-test <- test[!duplicated(test), ]
 print(train[duplicated(train),])
-print(test[duplicated(test),])
 
 #Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
 #não há uma ideia dos seus comportamentos exatamente)
-for(j in 8:32){
-  for(i in 1:nrow(train))
-  if(is.na(train[i,j])){
-    train[i,j] <- mean(train[,j],na.rm = TRUE)
-  }
-}
-
-for(j in 8:32){
-  for(i in 1:nrow(test))
-    if(is.na(test[i,j])){
-      test[i,j] <- mean(test[,j],na.rm = TRUE)
-    }
-}
-
-
-summary(train)
-summary(test)
+train <- na.omit(train)
 
 
 ######################## ---------------------------- ############################3
@@ -493,7 +438,10 @@ for(i in 1:nrow(train)){
 #Padronização dos dados
 for(j in 30:32){
   for(i in 1:nrow(test)){
+    if(!is.na(test[i,j])){
       test[i,j] <- (test[i,j] - mean(test[,j],na.rm = TRUE))/sd(test[,j], na.rm = TRUE)
+      
+    }
     
   }
 }
@@ -510,7 +458,10 @@ for(j in 30:32){
 #Reescala dos dados
 for(j in 7:30){
   for(i in 1:nrow(test)){
-    test[i,j] <- ((test[i,j] - min(test[,j])))/(max(test[,j]) - min(test[,j]))
+    
+      test[i,j] <- ((test[i,j] - min(test[,j], na.rm = TRUE)))/(max(test[,j],na.rm = TRUE) - min(test[,j],na.rm = TRUE))
+      
+    
     
   }
 }
@@ -530,16 +481,244 @@ summary(test)
 #14 - Redução de dimensionalidade
 
 #Utilização do PCA
+test <- na.omit(test)
 train$koi_disposition <- NULL
 test$koi_disposition <- NULL
 targetTrain = train$koi_pdisposition
 targetTest = test$koi_pdisposition
 
-
-train.pca <-  prcomp(train[, -1], center = TRUE, scale. = FALSE, rank. = 10)
-newTrainSet <- train.pca$x
+train.pca <-  prcomp(train[, -1], center = TRUE, scale. = FALSE, rank. = 2)
+newTrainSet <- cbind(targetTrain, train.pca$x)
+#resultado depois de juntar com a coluna do atributo alvo
 table(targetTrain)
-test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE, rank = 10)
-newTestSet <- test.pca$x
+table(targetTest)
+test <- na.omit(test)
+test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE, rank = 2)
+newTestSet <- cbind(targetTest, test.pca$x)
 
-#fazer gráficos a respeito dos novos datasets
+newTrainSet <- data.frame(newTrainSet)
+newTestSet <- data.frame(newTestSet)
+newTrainSet$PC1 <- as.numeric(newTrainSet$PC1)
+newTrainSet$PC2 <- as.numeric(newTrainSet$PC2)
+
+newTrainSet$targetTrain <- as.numeric(newTrainSet$targetTrain)
+newTestSet$PC1 <- as.numeric(newTestSet$PC1)
+newTestSet$PC2 <- as.numeric(newTestSet$PC2)
+
+newTestSet$targetTest <- as.numeric(newTestSet$targetTest)
+
+
+
+
+######################## ---------------------------- ############################3
+
+
+#TRABALHO 3 
+
+
+
+
+
+######################## ---------------------------- ############################3
+
+#Algoritmo de baseline
+
+
+#Criação do vetor com uns
+
+umVetor <- rep(1, length(targetTrain));
+
+contagemUns <- 0;
+contagemZero <-0;
+for(i in 1:length(targetTrain)){
+  print(i)
+    if (as.numeric(targetTrain[i]) == umVetor[i]){
+      contagemUns <- contagemUns + 1
+    }else {
+      contagemZero <- contagemZero + 1
+    }
+  
+}
+#acertos 
+print((contagemUns)/(contagemUns + contagemZero))
+
+######################## ---------------------------- ############################3
+
+#KNN
+
+
+#Cross Validation
+
+#Cross Validation - KNN
+folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+acuracia <- 0;
+mediaAcuracia <- 0;
+mediaPrecisao <-0;
+mediaRecall <- 0;
+precisao <- 0;
+recall <- 0;
+
+for (i in 1:10) {
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  x <- data.frame (trainData[,-1], y = as.factor(trainData[,1]))
+  model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 6)
+  predsVal <- as.numeric(as.character(model))
+  limiar <- 0.5
+  predVal <- ifelse(predsVal > limiar, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData [,1]== 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
+  
+}
+
+cat("\nAcurácia Média: ",(acuracia / 10),"\n")
+cat("\nPrecisao Médio: ",(precisao / 10),"\n")
+cat("\nRecall Médio: ",(recall / 10),"\n")
+
+#Previsão - KNN
+
+model <- knn(train = newTrainSet[,-1], test = newTestSet[,-1], cl = newTrainSet[,1], k = 6)
+predsVal <- as.numeric(as.character(model))
+limiar <- 0.5
+predVal <- ifelse(predsVal > limiar, 1, 0)
+
+
+tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
+fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
+tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
+fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
+acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+precisao <- as.numeric(tp)/as.numeric((tp+fp))
+recall <- as.numeric(tn)/as.numeric((tn+fn))
+
+cat("\nAcurácia: ",acuracia,"\n")
+cat("\nPrecisao : ",precisao,"\n")
+cat("\nRecall : ",recall,"\n")
+                                     
+
+######################## ---------------------------- ############################3
+
+
+#Cross Validation - Arvore de Decisão
+
+folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+acuracia <- 0
+precisao <- 0
+recall <- 0
+for (i in 1:10) {
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  model <- tree(trainData[,1] ~ ., trainData[,-1])
+  predsVal <-  predict(model, testData[,-1])
+  limiar <- 0.5
+  predVal <- ifelse(predsVal > limiar, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData[,1] == 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
+}
+
+cat("\nAcurácia Média: ",(acuracia / 10),"\n")
+cat("\nPrecisao Médio: ",(precisao / 10),"\n")
+cat("\nRecall Médio: ",(recall / 10),"\n")
+
+#Modelo - Arvore de decisão
+model <- tree(newTrainSet[,1] ~ ., newTrainSet[,-1])
+predVal <- predict(model, newTestSet[,-1])
+print(predVal)
+limiar <- 0.5
+predVal <- ifelse(predVal > limiar, 1, 0)
+tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
+fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
+tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
+fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
+acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+precisao <- as.numeric(tp)/as.numeric((tp+fp))
+recall <- as.numeric(tn)/as.numeric((tn+fn))
+
+cat("\nAcurácia: ",acuracia,"\n")
+cat("\nPrecisao : ",precisao,"\n")
+cat("\nRecall : ",recall,"\n")
+
+
+
+######################## ---------------------------- ############################3
+folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+acuracia <- 0
+precisao <- 0
+recall <- 0
+for (i in 1:10) {
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  model <- mlp(	x = trainData[,-1], 
+                y = trainData[,1], 
+                size = 100, 
+                learnFuncParams = c(0.4), 
+                maxit = 100, 
+                inputsTest = testData[,-1], 
+                targetsTest =testData[,1])
+  predsVal <- predict(model,testData[,-1])
+  predVal <- ifelse (predsVal > 0.5, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData[,1] == 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
+}
+
+cat("\nAcurácia Média: ",(acuracia / 10),"\n")
+cat("\nPrecisao Médio: ",(precisao / 10),"\n")
+cat("\nRecall Médio: ",(recall / 10),"\n")
+
+
+#Rede Neural - Modelo
+model <- mlp(	x = newTrainSet[,-1], 
+              y = newTrainSet[,1], 
+              size = 100, 
+              learnFuncParams = c(0.4), 
+              maxit = 100, 
+              inputsTest = newTestSet[,-1], 
+              targetsTest =newTestSet[,1])
+predsVal <- predict(model,newTestSet[,-1])
+predVal <- ifelse (predsVal > 0.5, 1, 0)
+tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
+fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
+tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
+fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
+acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+precisao <- as.numeric(tp)/as.numeric((tp+fp))
+recall <- as.numeric(tn)/as.numeric((tn+fn))
+
+cat("\nAcurácia: ",acuracia,"\n")
+cat("\nPrecisao : ",precisao,"\n")
+cat("\nRecall : ",recall,"\n")
+
+
+
+#Analise dos resultados
+
+
+
+
