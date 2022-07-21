@@ -77,26 +77,26 @@ unique(data$koi_duration)
 #função para coletar a moda de atributos nominais
 getmode <- function(v) {
   uniqv <- unique(v)
- print( uniqv[which.max(tabulate(match(v, uniqv)))])
-
+  print( uniqv[which.max(tabulate(match(v, uniqv)))])
+  
 }
 #Função para calcular a média, mediana e quartis
 getLocationsMeasures <- function(value){
   
- 
-    media <- mean(value, na.rm = TRUE)
-    cat("\nMédia = ", media)
-    mediana <- median(value, na.rm = TRUE)
-    cat("\nMediana = ", mediana)
-    maximum <- max(value, na.rm = TRUE)
-    cat("\nValor Maximo =", maximum)
-    minimum<- min(value, na.rm = TRUE)
-    cat("\nValor minimo =",minimum)
-    sortedData <- sort(value)
-    quartis <- quantile(sortedData,type=4)
-    cat("\nQuartis",quartis) 
   
- 
+  media <- mean(value, na.rm = TRUE)
+  cat("\nMédia = ", media)
+  mediana <- median(value, na.rm = TRUE)
+  cat("\nMediana = ", mediana)
+  maximum <- max(value, na.rm = TRUE)
+  cat("\nValor Maximo =", maximum)
+  minimum<- min(value, na.rm = TRUE)
+  cat("\nValor minimo =",minimum)
+  sortedData <- sort(value)
+  quartis <- quantile(sortedData,type=4)
+  cat("\nQuartis",quartis) 
+  
+  
 }
 
 
@@ -162,14 +162,14 @@ atributesForLocation <- data.frame(data$koi_score,
                                    data$koi_srad_err2,
                                    data$ra,
                                    data$dec,
-                                  data$koi_kepmag)
+                                   data$koi_kepmag)
 atributesModeForLocation <- data.frame(data$koi_disposition, 
-                                      data$koi_pdisposition, 
-                                      data$koi_fpflag_nt,
-                                      data$koi_fpflag_ss,
-                                      data$koi_fpflag_co,
-                                      data$koi_fpflag_ec,
-                                      data$koi_tce_plnt_num)
+                                       data$koi_pdisposition, 
+                                       data$koi_fpflag_nt,
+                                       data$koi_fpflag_ss,
+                                       data$koi_fpflag_co,
+                                       data$koi_fpflag_ec,
+                                       data$koi_tce_plnt_num)
 
 #Media, mediana e quartis para os dados quantitativos
 i<-0
@@ -357,12 +357,6 @@ test$koi_tce_plnt_num <- NULL
 #12 - Limpeza de dados
 
 
-#Eliminação de dados inconscistentes
-
-train <- na.omit(train)
-
-
-
 #Preenchimento dos dados
 summary(train$koi_score)
 
@@ -403,7 +397,7 @@ print(train[duplicated(train),])
 #não há uma ideia dos seus comportamentos exatamente)
 train <- na.omit(train)
 
-
+test <- na.omit(test)
 ######################## ---------------------------- ############################3
 
 
@@ -427,13 +421,7 @@ for(i in 1:nrow(test)){
 }
 
 #Padronização dos dados que  formam uma distribuição normal
-for(i in 1:nrow(train)){
-  if(train[i,2] == "CANDIDATE"){
-    train[i,2] = 1
-  }else if (train[i,2] == "FALSE POSITIVE"){
-    train[i,2] = 0
-  }
-}
+
 
 #Padronização dos dados
 for(j in 30:32){
@@ -459,8 +447,8 @@ for(j in 30:32){
 for(j in 7:30){
   for(i in 1:nrow(test)){
     
-      test[i,j] <- ((test[i,j] - min(test[,j], na.rm = TRUE)))/(max(test[,j],na.rm = TRUE) - min(test[,j],na.rm = TRUE))
-      
+    test[i,j] <- ((test[i,j] - min(test[,j], na.rm = TRUE)))/(max(test[,j],na.rm = TRUE) - min(test[,j],na.rm = TRUE))
+    
     
     
   }
@@ -481,19 +469,18 @@ summary(test)
 #14 - Redução de dimensionalidade
 
 #Utilização do PCA
-test <- na.omit(test)
 train$koi_disposition <- NULL
 test$koi_disposition <- NULL
 targetTrain = train$koi_pdisposition
 targetTest = test$koi_pdisposition
 
-train.pca <-  prcomp(train[, -1], center = TRUE, scale. = FALSE, rank. = 2)
+train.pca <-  prcomp(train[, -1], center = TRUE, scale. = TRUE, rank. = 2)
 newTrainSet <- cbind(targetTrain, train.pca$x)
 #resultado depois de juntar com a coluna do atributo alvo
 table(targetTrain)
 table(targetTest)
 test <- na.omit(test)
-test.pca <-  prcomp(test[, -1], center = TRUE,scale. = FALSE, rank = 2)
+test.pca <-  prcomp(test[, -1], center = TRUE,scale. = TRUE, rank = 2)
 newTestSet <- cbind(targetTest, test.pca$x)
 
 newTrainSet <- data.frame(newTrainSet)
@@ -526,21 +513,39 @@ newTestSet$targetTest <- as.numeric(newTestSet$targetTest)
 
 #Criação do vetor com uns
 
-umVetor <- rep(1, length(targetTrain));
+umVetor <- rep(1, length(targetTest));
 
 contagemUns <- 0;
 contagemZero <-0;
-for(i in 1:length(targetTrain)){
-  print(i)
-    if (as.numeric(targetTrain[i]) == umVetor[i]){
-      contagemUns <- contagemUns + 1
-    }else {
-      contagemZero <- contagemZero + 1
-    }
+for(i in 1:length(targetTest)){
+  if (as.numeric(targetTest[i]) == umVetor[i]){
+    contagemUns <- contagemUns + 1
+  }else {
+    contagemZero <- contagemZero + 1
+  }
   
 }
-#acertos 
-print((contagemUns)/(contagemUns + contagemZero))
+
+
+if(contagemUns > contagemZero){
+  
+  #Acurácia
+  print((contagemUns)/(contagemZero + contagemUns))
+  
+  
+}else {
+  
+  #Acurácoa
+  print((contagemZero)/(contagemZero + contagemUns))
+  
+  
+
+  
+}
+
+
+
+
 
 ######################## ---------------------------- ############################3
 
@@ -563,7 +568,7 @@ for (i in 1:10) {
   testData <- newTrainSet[testIndexes,]
   trainData <- newTrainSet[-testIndexes,]
   x <- data.frame (trainData[,-1], y = as.factor(trainData[,1]))
-  model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 6)
+  model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 15)
   predsVal <- as.numeric(as.character(model))
   limiar <- 0.5
   predVal <- ifelse(predsVal > limiar, 1, 0)
@@ -580,16 +585,16 @@ for (i in 1:10) {
 }
 
 cat("\nAcurácia Média: ",(acuracia / 10),"\n")
-cat("\nPrecisao Médio: ",(precisao / 10),"\n")
+cat("\nPrecisao Média: ",(precisao / 10),"\n")
 cat("\nRecall Médio: ",(recall / 10),"\n")
 
 #Previsão - KNN
 
-model <- knn(train = newTrainSet[,-1], test = newTestSet[,-1], cl = newTrainSet[,1], k = 6)
+model <- class::knn(train = newTrainSet[,-1], test = newTestSet[,-1], cl = newTrainSet[,1], k = 15)
+
 predsVal <- as.numeric(as.character(model))
 limiar <- 0.5
 predVal <- ifelse(predsVal > limiar, 1, 0)
-
 
 tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
 fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
@@ -603,7 +608,7 @@ recall <- as.numeric(tn)/as.numeric((tn+fn))
 cat("\nAcurácia: ",acuracia,"\n")
 cat("\nPrecisao : ",precisao,"\n")
 cat("\nRecall : ",recall,"\n")
-                                     
+
 
 ######################## ---------------------------- ############################3
 
@@ -640,7 +645,6 @@ cat("\nRecall Médio: ",(recall / 10),"\n")
 #Modelo - Arvore de decisão
 model <- tree(newTrainSet[,1] ~ ., newTrainSet[,-1])
 predVal <- predict(model, newTestSet[,-1])
-print(predVal)
 limiar <- 0.5
 predVal <- ifelse(predVal > limiar, 1, 0)
 tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
@@ -714,11 +718,4 @@ recall <- as.numeric(tn)/as.numeric((tn+fn))
 cat("\nAcurácia: ",acuracia,"\n")
 cat("\nPrecisao : ",precisao,"\n")
 cat("\nRecall : ",recall,"\n")
-
-
-
-#Analise dos resultados
-
-
-
 

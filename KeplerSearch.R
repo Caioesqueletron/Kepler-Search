@@ -1,130 +1,194 @@
+library(readr)
+library(gridExtra)
+library(dplyr)
+library(skyscapeR)    
+library(e1071)
+library(FactoMineR)
+library(RSNNS)
+library(class)
+library(tree)
+
+
+#Inicio e alguns tratamentos
+data  = read.csv('cumulative.csv', stringsAsFactors = FALSE)
+
+summary(data)
+
+table(data$koi_disposition)
+######################## ---------------------------- ############################3
+
+#Tratamento das colunas de erros
+
+data$koi_time0bk_err1 <- data$koi_time0bk_err1 + data$koi_time0bk
+data$koi_time0bk_err2 <- data$koi_time0bk_err2 + data$koi_time0bk
 data$koi_time0bk <- NULL
+
 data$koi_period_err1 <- data$koi_period_err1 + data$koi_period
 data$koi_period_err2 <- data$koi_period_err2 + data$koi_period
 data$koi_period <- NULL
+
 data$koi_impact_err1 <- data$koi_impact_err1 + data$koi_impact
 data$koi_impact_err2 <- data$koi_impact_err2 + data$koi_impact
 data$koi_impact <- NULL
+
 data$koi_duration_err1 <- data$koi_duration_err1 + data$koi_duration
 data$koi_duration_err2 <- data$koi_duration_err2 + data$koi_duration
 data$koi_duration <- NULL
+
 data$koi_depth_err1 <- data$koi_depth_err1 + data$koi_depth
 data$koi_depth_err2 <- data$koi_depth_err2+ data$koi_depth
 data$koi_depth <- NULL
+
 data$koi_insol_err1 <- data$koi_insol_err1 + data$koi_insol
 data$koi_insol_err2 <- data$koi_insol_err2 + data$koi_insol
 data$koi_insol <- NULL
+
 data$koi_steff_err1 <- data$koi_steff_err1 + data$koi_steff
 data$koi_steff_err2 <- data$koi_steff_err2 + data$koi_steff
 data$koi_steff<- NULL
+
 data$koi_slogg_err1 <- data$koi_slogg_err1 + data$koi_slogg
 data$koi_slogg_err2 <- data$koi_slogg_err2 + data$koi_slogg
 data$koi_slogg <- NULL
+
 data$koi_srad_err1 <- data$koi_srad_err1 + data$koi_srad
 data$koi_srad_err2 <- data$koi_srad_err2 + data$koi_srad
 data$koi_srad <- NULL
+
 data$koi_prad_err1 <- data$koi_prad_err1 + data$koi_prad
 data$koi_prad_err2 <- data$koi_prad_err2 + data$koi_prad
+
 data$koi_prad <- NULL
+
+
+
+
 summary(data)
 #1 - Imprime o atributo target
 target <- data$koi_pdisposition
 table(target)
 sample(data)
 unique(data$koi_duration)
+
 ######################## ---------------------------- ############################3
+
 # 4 - Exploração dos dados atraves de medidas de localidade
+
 #função para coletar a moda de atributos nominais
 getmode <- function(v) {
-uniqv <- unique(v)
-print( uniqv[which.max(tabulate(match(v, uniqv)))])
+  uniqv <- unique(v)
+  print( uniqv[which.max(tabulate(match(v, uniqv)))])
+  
 }
 #Função para calcular a média, mediana e quartis
 getLocationsMeasures <- function(value){
-media <- mean(value, na.rm = TRUE)
-cat("\nMédia = ", media)
-mediana <- median(value, na.rm = TRUE)
-cat("\nMediana = ", mediana)
-maximum <- max(value, na.rm = TRUE)
-cat("\nValor Maximo =", maximum)
-minimum<- min(value, na.rm = TRUE)
-cat("\nValor minimo =",minimum)
-sortedData <- sort(value)
-quartis <- quantile(sortedData,type=4)
-cat("\nQuartis",quartis)
+  
+  
+  media <- mean(value, na.rm = TRUE)
+  cat("\nMédia = ", media)
+  mediana <- median(value, na.rm = TRUE)
+  cat("\nMediana = ", mediana)
+  maximum <- max(value, na.rm = TRUE)
+  cat("\nValor Maximo =", maximum)
+  minimum<- min(value, na.rm = TRUE)
+  cat("\nValor minimo =",minimum)
+  sortedData <- sort(value)
+  quartis <- quantile(sortedData,type=4)
+  cat("\nQuartis",quartis) 
+  
+  
 }
+
+
 #Função para calcular a variancia
 getVariance <- function(value){
-variance <- var(value, na.rm=TRUE)
-cat("\nVariancia = ", variance)
+  
+  variance <- var(value, na.rm=TRUE)
+  cat("\nVariancia = ", variance)
+  
+  
 }
+
 #Função para calcular o intervalar
 getInterval <- function(value){
-interval <- (max(value, na.rm = TRUE) - min(value, na.rm = TRUE))
-cat("\nIntervalar = ", interval)
+  interval <- (max(value, na.rm = TRUE) - min(value, na.rm = TRUE))
+  cat("\nIntervalar = ", interval)
+  
 }
+
 #Função para calcular o desvio padrão
 getDesvioPadrao <- function(value){
-desvio <- sd(value, na.rm = TRUE)
-cat("\nDesvio Padrão = ", desvio)
+  desvio <- sd(value, na.rm = TRUE)
+  cat("\nDesvio Padrão = ", desvio)
+  
+  
 }
+
 #Função para calcular a curtose
 getCurtose <- function(value){
-curtose <- kurtosis(value,na.rm = TRUE)
-cat("\nCurtose = ", curtose)
+  curtose <- kurtosis(value,na.rm = TRUE)
+  cat("\nCurtose = ", curtose)
+  
 }
+
 #Função para calcular a obliquidade
 getObliquidade <-function(value){
-obliquidade <- skewness(value, na.rm = TRUE)
-cat("\nObliquidade =", obliquidade)
+  obliquidade <- skewness(value, na.rm = TRUE)
+  cat("\nObliquidade =", obliquidade)
 }
-atributesForLocation <- data.frame(data$koi_score,
-data$koi_period_err1,
-data$koi_period_err2,
-data$koi_time0bk_err1,
-data$koi_time0bk_err2,
-data$koi_impact_err1,
-data$koi_impact_err2,
-data$koi_duration_err1,
-data$koi_duration_err2,
-data$koi_depth_err1,
-data$koi_depth_err2,
-data$koi_prad_err1,
-data$koi_prad_err2,
-data$koi_teq,
-data$koi_insol_err1,
-data$koi_insol_err2,
-data$koi_model_snr,
-data$koi_slogg_err1,
-data$koi_slogg_err2,
-data$koi_steff_err1,
-data$koi_steff_err2,
-data$koi_srad_err1,
-data$koi_srad_err2,
-data$ra,
-data$dec,
-data$koi_kepmag)
-atributesModeForLocation <- data.frame(data$koi_disposition,
-data$koi_pdisposition,
-data$koi_fpflag_nt,
-data$koi_fpflag_ss,
-data$koi_fpflag_co,
-data$koi_fpflag_ec,
-data$koi_tce_plnt_num)
+
+atributesForLocation <- data.frame(data$koi_score, 
+                                   data$koi_period_err1,
+                                   data$koi_period_err2, 
+                                   data$koi_time0bk_err1,
+                                   data$koi_time0bk_err2,
+                                   data$koi_impact_err1,
+                                   data$koi_impact_err2,
+                                   data$koi_duration_err1,
+                                   data$koi_duration_err2,
+                                   data$koi_depth_err1,
+                                   data$koi_depth_err2,
+                                   data$koi_prad_err1,
+                                   data$koi_prad_err2,
+                                   data$koi_teq,
+                                   data$koi_insol_err1,
+                                   data$koi_insol_err2,
+                                   data$koi_model_snr,
+                                   data$koi_slogg_err1,
+                                   data$koi_slogg_err2,
+                                   data$koi_steff_err1,
+                                   data$koi_steff_err2,
+                                   data$koi_srad_err1,
+                                   data$koi_srad_err2,
+                                   data$ra,
+                                   data$dec,
+                                   data$koi_kepmag)
+atributesModeForLocation <- data.frame(data$koi_disposition, 
+                                       data$koi_pdisposition, 
+                                       data$koi_fpflag_nt,
+                                       data$koi_fpflag_ss,
+                                       data$koi_fpflag_co,
+                                       data$koi_fpflag_ec,
+                                       data$koi_tce_plnt_num)
+
 #Media, mediana e quartis para os dados quantitativos
 i<-0
 for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getLocationsMeasures(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getLocationsMeasures(row)
+  i<- i+1
+  
 }
+
 #Moda dos atributos quantitativos
 i<-0
 for(row in atributesModeForLocation){
-cat("\n\nDados do", i )
-getmode(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getmode(row)
+  i<- i+1
+  
 }
+
 #Printagem dos boxplots
 boxplot(data$koi_score, ylab = "Score", main = "Disposition Score")
 boxplot(data$koi_period_err1, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=FALSE)
@@ -151,27 +215,37 @@ boxplot(data$koi_slogg_err2,  ylab="log10(cm s-2)", main="Stellar Surface Gravit
 boxplot(data$ra,  ylab="deg", main="RA",outline = FALSE)
 boxplot(data$dec,  ylab="deg", main="Dec",outline = FALSE)
 boxplot(data$koi_kepmag, ylab="mag", main="Kepler-band", outline = FALSE)
+
 boxplot(data$koi_kepmag, ylab= "dias", main="Periodo Orbtital[erro maximo]",outline=TRUE)
+
+
+
 ######################## ---------------------------- ############################3
+
 #Item 5 - Exploração das medidas de espalhamento
 i<-0
 for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getInterval(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getInterval(row)
+  i<- i+1
+  
+}
+
+i<-0
+for(row in atributesForLocation){
+  cat("\n\nDados do", i )
+  getVariance(row)
+  i<- i+1
+  
 }
 i<-0
 for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getVariance(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getDesvioPadrao(row)
+  i<- i+1
+  
 }
-i<-0
-for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getDesvioPadrao(row)
-i<- i+1
-}
+
 #Item 6 - Medidas de dispersão
 hist(data$koi_score, col="white",main = "Disposition Score", border="black", breaks = 100);
 hist(data$koi_period_err1, col="white", main = "Periodo Orbtital[erro maximo]" , border="black",breaks =100 ); #reescala não distribuição dos dadso
@@ -198,29 +272,36 @@ hist(data$koi_slogg_err2, col="white", main = "Stellar Surface Gravity[erro mini
 hist(data$ra, col="white", main= "RA", border="black", breaks = 100);
 hist(data$dec, col="white", main="DEC", border="black", breaks = 100);
 hist(data$koi_kepmag, col="white", main="Kepler Band",border="black", breaks = 100);
+
 #Histogramas para os atributos quantitativos:
 hist(data$koi_fpflag_nt, col="white", main="Not Transit-Like Flag",border="black", breaks = 100);
 hist(data$koi_fpflag_co, col="white", main="Centroid Offset Flag",border="black", breaks = 100);
 hist(data$koi_fpflag_ss, col="white", main="Stellar Eclipse Flag",border="black", breaks = 100);
 hist(data$koi_fpflag_ec, col="white", main="Ephemeris Match Indicates Contamination Flag",border="black", breaks = 100);
 hist(data$koi_tce_plnt_num, col="white", main="Número do Planeta TCE federado ao KOI",border="black", breaks = 100);
+
 i<-0
 for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getCurtose(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getCurtose(row)
+  i<- i+1
+  
 }
+
 i<-0
 for(row in atributesForLocation){
-cat("\n\nDados do", i )
-getObliquidade(row)
-i<- i+1
+  cat("\n\nDados do", i )
+  getObliquidade(row)
+  i<- i+1
+  
 }
+
 ######################## ---------------------------- ############################3
+
 table(data$koi_pdisposition)
 #Item  7 - Separação de conjuntos de teste e treino
-sample <- sample(c(rep(0, 0.8 * nrow(data)),
-rep(1, 0.2 * nrow(data))))
+sample <- sample(c(rep(0, 0.8 * nrow(data)),  
+                   rep(1, 0.2 * nrow(data))))
 table(sample)
 train <- data[sample == 0, ]
 tabela <- table(train$koi_pdisposition)
@@ -228,8 +309,12 @@ print(tabela)
 test  <- data[sample == 1, ]
 tabela2 <- table(test$koi_disposition)
 print(tabela2)
+
 ######################## ---------------------------- ############################3
+
+
 #Item 8 - Eliminação de atributos não necessários
+
 #removendo atributos desnecesários do dataset de treino
 train <- subset(train,train$koi_period_err1 < 800 )
 train <- subset(train,train$koi_time0bk_err1 < 700 )
@@ -242,6 +327,8 @@ train <- subset(train, train$koi_teq < 5000)
 train <- subset(train, train$koi_insol_err1 < 3e+05)
 train <- subset(train, train$koi_slogg_err1 > 2)
 train <- subset(train, train$koi_kepmag < 18 & train$koi_kepmag > 8)
+
+
 train$rowid<- NULL
 train$kepid<- NULL
 train$kepler_name<- NULL
@@ -250,7 +337,10 @@ train$koi_teq_err1<-NULL
 train$koi_teq_err2<-NULL
 train$koi_tce_delivname<-NULL
 train$koi_tce_plnt_num <- NULL
+
+
 summary(train)
+
 #removendo atributos desnecessários do dataset de teste
 test$rowid<- NULL
 test$kepid<- NULL
@@ -260,85 +350,130 @@ test$koi_teq_err1<-NULL
 test$koi_teq_err2<-NULL
 test$koi_tce_delivname<-NULL
 test$koi_tce_plnt_num <- NULL
+
 ######################## ---------------------------- ############################3
+
+
 #12 - Limpeza de dados
+
+
 #Preenchimento dos dados
 summary(train$koi_score)
+
 for(i in 1:nrow(train)){
-if(is.na(train[i,3])){
-if(train[i,1] == "FALSE POSITIVE" && train[i,2] == "FALSE POSITIVE" ){
-train[i,3] <- 0.000
+  if(is.na(train[i,3])){
+    if(train[i,1] == "FALSE POSITIVE" && train[i,2] == "FALSE POSITIVE" ){
+      train[i,3] <- 0.000
+    }
+    else if(train[i,1] == "CONFIRMED" && train[i,2] == "CANDIDATE"){
+      train[i,3] <- 1.000
+      
+    }
+    
+    else if(train[i,1] == "CANDIDATE" && train[i,2] == "CANDIDATE"){
+      train[i,3] <- 0.800
+      
+    }
+    
+    else if(train[i,1] == "CONFIRMED" && train[i,2] == "FALSE POSITIVE"){
+      train[i,3] <- 0.200
+      
+    }
+    
+    
+    
+  }
+  
 }
-else if(train[i,1] == "CONFIRMED" && train[i,2] == "CANDIDATE"){
-train[i,3] <- 1.000
-}
-else if(train[i,1] == "CANDIDATE" && train[i,2] == "CANDIDATE"){
-train[i,3] <- 0.800
-}
-else if(train[i,1] == "CONFIRMED" && train[i,2] == "FALSE POSITIVE"){
-train[i,3] <- 0.200
-}
-}
-}
+
+
+
+
 #Verificando dados duplicados
 print(train[duplicated(train),])
 train <- train[!duplicated(train),]
 print(train[duplicated(train),])
-#Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que
+
+#Colocando a média nos valores que estão com NA(outra estratégia seria remove-los tambem visto que 
 #não há uma ideia dos seus comportamentos exatamente)
 train <- na.omit(train)
 test <- na.omit(test)
 ######################## ---------------------------- ############################3
+
+
+
 #13 - Conversão de dados
 #Conversão do atributo alvo de Simbolico para Númerico(Binário)
 for(i in 1:nrow(train)){
-if(train[i,2] == "CANDIDATE"){
-train[i,2] = 1
-}else if (train[i,2] == "FALSE POSITIVE"){
-train[i,2] = 0
+  if(train[i,2] == "CANDIDATE"){
+    train[i,2] = 1
+  }else if (train[i,2] == "FALSE POSITIVE"){
+    train[i,2] = 0
+  }
 }
-}
+
 for(i in 1:nrow(test)){
-if(test[i,2] == "CANDIDATE"){
-test[i,2] = 1
-}else if (test[i,2] == "FALSE POSITIVE"){
-test[i,2] = 0
+  if(test[i,2] == "CANDIDATE"){
+    test[i,2] = 1
+  }else if (test[i,2] == "FALSE POSITIVE"){
+    test[i,2] = 0
+  }
 }
-}
+
 #Padronização dos dados que  formam uma distribuição normal
+
+
 #Padronização dos dados
 for(j in 30:32){
-for(i in 1:nrow(test)){
-if(!is.na(test[i,j])){
-test[i,j] <- (test[i,j] - mean(test[,j],na.rm = TRUE))/sd(test[,j], na.rm = TRUE)
+  for(i in 1:nrow(test)){
+    if(!is.na(test[i,j])){
+      test[i,j] <- (test[i,j] - mean(test[,j],na.rm = TRUE))/sd(test[,j], na.rm = TRUE)
+      
+    }
+    
+  }
 }
-}
-}
+
 for(j in 30:32){
-for(i in 1:nrow(train)){
-train[i,j] <- (train[i,j] - mean(train[,j],na.rm = TRUE))/sd(train[,j], na.rm = TRUE)
+  for(i in 1:nrow(train)){
+    train[i,j] <- (train[i,j] - mean(train[,j],na.rm = TRUE))/sd(train[,j], na.rm = TRUE)
+    
+  }
 }
-}
+
+
+
 #Reescala dos dados
 for(j in 7:30){
-for(i in 1:nrow(test)){
-test[i,j] <- ((test[i,j] - min(test[,j], na.rm = TRUE)))/(max(test[,j],na.rm = TRUE) - min(test[,j],na.rm = TRUE))
-}
+  for(i in 1:nrow(test)){
+    
+    test[i,j] <- ((test[i,j] - min(test[,j], na.rm = TRUE)))/(max(test[,j],na.rm = TRUE) - min(test[,j],na.rm = TRUE))
+    
+    
+    
+  }
 }
 for(j in 7:30){
-for(i in 1:nrow(train)){
-train[i,j] <- ((train[i,j] - min(train[,j])))/(max(train[,j]) - min(train[,j]))
+  for(i in 1:nrow(train)){
+    train[i,j] <- ((train[i,j] - min(train[,j])))/(max(train[,j]) - min(train[,j]))
+    
+  }
 }
-}
+
 summary(train)
 summary(test)
+
 ######################## ---------------------------- ############################3
+
+
 #14 - Redução de dimensionalidade
+
 #Utilização do PCA
 train$koi_disposition <- NULL
 test$koi_disposition <- NULL
 targetTrain = train$koi_pdisposition
 targetTest = test$koi_pdisposition
+
 train.pca <-  prcomp(train[, -1], center = TRUE, scale. = TRUE, rank. = 2)
 newTrainSet <- cbind(targetTrain, train.pca$x)
 #resultado depois de juntar com a coluna do atributo alvo
@@ -347,166 +482,243 @@ table(targetTest)
 test <- na.omit(test)
 test.pca <-  prcomp(test[, -1], center = TRUE,scale. = TRUE, rank = 2)
 newTestSet <- cbind(targetTest, test.pca$x)
+
 newTrainSet <- data.frame(newTrainSet)
 newTestSet <- data.frame(newTestSet)
 newTrainSet$PC1 <- as.numeric(newTrainSet$PC1)
 newTrainSet$PC2 <- as.numeric(newTrainSet$PC2)
+
 newTrainSet$targetTrain <- as.numeric(newTrainSet$targetTrain)
 newTestSet$PC1 <- as.numeric(newTestSet$PC1)
 newTestSet$PC2 <- as.numeric(newTestSet$PC2)
+
 newTestSet$targetTest <- as.numeric(newTestSet$targetTest)
+
+
+
+
 ######################## ---------------------------- ############################3
-#TRABALHO 3
+
+
+#TRABALHO 3 
+
+
+
+
+
 ######################## ---------------------------- ############################3
+
 #Algoritmo de baseline
+
+
 #Criação do vetor com uns
+
 umVetor <- rep(1, length(targetTest));
+
 contagemUns <- 0;
 contagemZero <-0;
 for(i in 1:length(targetTest)){
-if (as.numeric(targetTest[i]) == umVetor[i]){
-contagemUns <- contagemUns + 1
-}else {
-contagemZero <- contagemZero + 1
+  if (as.numeric(targetTest[i]) == umVetor[i]){
+    contagemUns <- contagemUns + 1
+  }else {
+    contagemZero <- contagemZero + 1
+  }
+  
 }
-}
+
+
 if(contagemUns > contagemZero){
-#Acurácia
-print((contagemUns)/(contagemZero + contagemUns))
+  
+  #Acurácia
+  print((contagemUns)/(contagemZero + contagemUns))
+  
+  
 }else {
-#Acurácoa
-print((contagemZero)/(contagemZero + contagemUns))
+  
+  #Acurácoa
+  print((contagemZero)/(contagemZero + contagemUns))
+  
+  
+
+  
 }
+
+
+
+
+
 ######################## ---------------------------- ############################3
+
 #KNN
+
+
 #Cross Validation
+
 #Cross Validation - KNN
-folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+folds <- cut(seq(1,nrow(train)),breaks = 10, labels = FALSE);
 acuracia <- 0;
 mediaAcuracia <- 0;
 mediaPrecisao <-0;
 mediaRecall <- 0;
 precisao <- 0;
 recall <- 0;
+
 for (i in 1:10) {
-testIndexes <- which(folds == i, arr.ind = TRUE)
-testData <- newTrainSet[testIndexes,]
-trainData <- newTrainSet[-testIndexes,]
-x <- data.frame (trainData[,-1], y = as.factor(trainData[,1]))
-model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 15)
-predsVal <- as.numeric(as.character(model))
-limiar <- 0.5
-predVal <- ifelse(predsVal > limiar, 1, 0)
-tp <- sum((testData[,1] == 1) & (predVal == 1))
-fp <- sum((testData[,1] == 0) & (predVal == 1))
-tn <- sum((testData[,1] == 0) & (predVal == 0))
-fn <- sum((testData [,1]== 1) & (predVal == 0))
-acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
-precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
-recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  x <- data.frame (trainData[,-1], y = as.factor(trainData[,1]))
+  model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 15)
+  predsVal <- as.numeric(as.character(model))
+  limiar <- 0.5
+  predVal <- ifelse(predsVal > limiar, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData [,1]== 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
+  
 }
+
 cat("\nAcurácia Média: ",(acuracia / 10),"\n")
 cat("\nPrecisao Média: ",(precisao / 10),"\n")
 cat("\nRecall Médio: ",(recall / 10),"\n")
+
 #Previsão - KNN
-model <- class::knn(train = newTrainSet[,-1], test = newTestSet[,-1], cl = newTrainSet[,1], k = 15)
+
+model <- class::knn(train = train[,-1], test = test[,-1], cl = train[,1], k = 15)
+
 predsVal <- as.numeric(as.character(model))
 limiar <- 0.5
 predVal <- ifelse(predsVal > limiar, 1, 0)
-tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
-fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
-tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
-fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+
+tp <- sum((test[,1] == 1) & (predVal == 1))
+fp <- sum((test[,1] == 0) & (predVal == 1))
+tn <- sum((test[,1] == 0) & (predVal == 0))
+fn <- sum((test[,1] == 1) & (predVal == 0))
 confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
 acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
 precisao <- as.numeric(tp)/as.numeric((tp+fp))
 recall <- as.numeric(tn)/as.numeric((tn+fn))
+
 cat("\nAcurácia: ",acuracia,"\n")
 cat("\nPrecisao : ",precisao,"\n")
 cat("\nRecall : ",recall,"\n")
-folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+
+
+######################## ---------------------------- ############################3
+
+
+#Cross Validation - Arvore de Decisão
+
+folds <- cut(seq(1,nrow(train)),breaks = 10, labels = FALSE);
 acuracia <- 0
 precisao <- 0
 recall <- 0
 for (i in 1:10) {
-testIndexes <- which(folds == i, arr.ind = TRUE)
-testData <- newTrainSet[testIndexes,]
-trainData <- newTrainSet[-testIndexes,]
-model <- tree(trainData[,1] ~ ., trainData[,-1])
-predsVal <-  predict(model, testData[,-1])
-limiar <- 0.5
-predVal <- ifelse(predsVal > limiar, 1, 0)
-tp <- sum((testData[,1] == 1) & (predVal == 1))
-fp <- sum((testData[,1] == 0) & (predVal == 1))
-tn <- sum((testData[,1] == 0) & (predVal == 0))
-fn <- sum((testData[,1] == 1) & (predVal == 0))
-acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
-precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
-recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  model <- tree(trainData[,1] ~ ., trainData[,-1])
+  predsVal <-  predict(model, testData[,-1])
+  limiar <- 0.5
+  predVal <- ifelse(predsVal > limiar, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData[,1] == 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
 }
+
 cat("\nAcurácia Média: ",(acuracia / 10),"\n")
 cat("\nPrecisao Médio: ",(precisao / 10),"\n")
 cat("\nRecall Médio: ",(recall / 10),"\n")
-model <- tree(newTrainSet[,1] ~ ., newTrainSet[,-1])
-predVal <- predict(model, newTestSet[,-1])
+
+#Modelo - Arvore de decisão
+model <- tree(train[,1] ~ ., train[,-1])
+predVal <- predict(model, test[,-1])
 limiar <- 0.5
 predVal <- ifelse(predVal > limiar, 1, 0)
-tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
-fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
-tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
-fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+tp <- sum((test[,1] == 1) & (predVal == 1))
+fp <- sum((test[,1] == 0) & (predVal == 1))
+tn <- sum((test[,1] == 0) & (predVal == 0))
+fn <- sum((test[,1] == 1) & (predVal == 0))
 confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
 acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
 precisao <- as.numeric(tp)/as.numeric((tp+fp))
 recall <- as.numeric(tn)/as.numeric((tn+fn))
+
 cat("\nAcurácia: ",acuracia,"\n")
 cat("\nPrecisao : ",precisao,"\n")
 cat("\nRecall : ",recall,"\n")
+
+
+
+######################## ---------------------------- ############################3
 folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
 acuracia <- 0
 precisao <- 0
 recall <- 0
 for (i in 1:10) {
-testIndexes <- which(folds == i, arr.ind = TRUE)
-testData <- newTrainSet[testIndexes,]
-trainData <- newTrainSet[-testIndexes,]
-model <- mlp(	x = trainData[,-1],
-y = trainData[,1],
-size = 100,
-learnFuncParams = c(0.4),
-maxit = 100,
-inputsTest = testData[,-1],
-targetsTest =testData[,1])
-predsVal <- predict(model,testData[,-1])
-predVal <- ifelse (predsVal > 0.5, 1, 0)
-tp <- sum((testData[,1] == 1) & (predVal == 1))
-fp <- sum((testData[,1] == 0) & (predVal == 1))
-tn <- sum((testData[,1] == 0) & (predVal == 0))
-fn <- sum((testData[,1] == 1) & (predVal == 0))
-acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
-precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
-recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  testIndexes <- which(folds == i, arr.ind = TRUE)
+  testData <- newTrainSet[testIndexes,]
+  trainData <- newTrainSet[-testIndexes,]
+  model <- mlp(	x = trainData[,-1], 
+                y = trainData[,1], 
+                size = 100, 
+                learnFuncParams = c(0.4), 
+                maxit = 100, 
+                inputsTest = testData[,-1], 
+                targetsTest =testData[,1])
+  predsVal <- predict(model,testData[,-1])
+  predVal <- ifelse (predsVal > 0.5, 1, 0)
+  tp <- sum((testData[,1] == 1) & (predVal == 1))
+  fp <- sum((testData[,1] == 0) & (predVal == 1))
+  tn <- sum((testData[,1] == 0) & (predVal == 0))
+  fn <- sum((testData[,1] == 1) & (predVal == 0))
+  
+  acuracia <- acuracia + (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
+  precisao <- precisao + (as.numeric(tp ))/as.numeric((tp+fp))
+  recall <- recall + (as.numeric(tn))/as.numeric((tn+fn))
+  
 }
+
 cat("\nAcurácia Média: ",(acuracia / 10),"\n")
 cat("\nPrecisao Médio: ",(precisao / 10),"\n")
 cat("\nRecall Médio: ",(recall / 10),"\n")
-model <- mlp(	x = newTrainSet[,-1],
-y = newTrainSet[,1],
-size = 100,
-learnFuncParams = c(0.4),
-maxit = 100,
-inputsTest = newTestSet[,-1],
-targetsTest =newTestSet[,1])
-predsVal <- predict(model,newTestSet[,-1])
+
+train$koi_pdisposition <- as.numeric(train$koi_pdisposition)
+test$koi_pdisposition <- as.numeric(test$koi_pdisposition)
+
+
+#Rede Neural - Modelo
+model <- mlp(	x = train[,-1], 
+              y = train[,1], 
+              size = 100, 
+              learnFuncParams = c(0.4), 
+              maxit = 100, 
+              inputsTest = test[,-1], 
+              targetsTest =test[,1])
+predsVal <- predict(model,test[,-1])
 predVal <- ifelse (predsVal > 0.5, 1, 0)
-tp <- sum((newTestSet[,1] == 1) & (predVal == 1))
-fp <- sum((newTestSet[,1] == 0) & (predVal == 1))
-tn <- sum((newTestSet[,1] == 0) & (predVal == 0))
-fn <- sum((newTestSet[,1] == 1) & (predVal == 0))
+tp <- sum((test[,1] == 1) & (predVal == 1))
+fp <- sum((test[,1] == 0) & (predVal == 1))
+tn <- sum((test[,1] == 0) & (predVal == 0))
+fn <- sum((test[,1] == 1) & (predVal == 0))
 confusionMat <- matrix(c(tn, fn, fp, tp), nrow = 2, ncol = 2, dimnames = list(c("0","1"), c("0","1")))
 acuracia <- (as.numeric(tp + tn))/as.numeric((tp+tn+fp+fn))
 precisao <- as.numeric(tp)/as.numeric((tp+fp))
 recall <- as.numeric(tn)/as.numeric((tn+fn))
+
 cat("\nAcurácia: ",acuracia,"\n")
 cat("\nPrecisao : ",precisao,"\n")
 cat("\nRecall : ",recall,"\n")
+
