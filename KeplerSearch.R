@@ -565,8 +565,8 @@ recall <- 0;
 
 for (i in 1:10) {
   testIndexes <- which(folds == i, arr.ind = TRUE)
-  testData <- newTrainSet[testIndexes,]
-  trainData <- newTrainSet[-testIndexes,]
+  testData <- train[testIndexes,]
+  trainData <- train[-testIndexes,]
   x <- data.frame (trainData[,-1], y = as.factor(trainData[,1]))
   model <- knn(train = trainData[,-1], test = testData[,-1], cl = trainData[,1], k = 15)
   predsVal <- as.numeric(as.character(model))
@@ -621,8 +621,8 @@ precisao <- 0
 recall <- 0
 for (i in 1:10) {
   testIndexes <- which(folds == i, arr.ind = TRUE)
-  testData <- newTrainSet[testIndexes,]
-  trainData <- newTrainSet[-testIndexes,]
+  testData <- train[testIndexes,]
+  trainData <- train[-testIndexes,]
   model <- tree(trainData[,1] ~ ., trainData[,-1])
   predsVal <-  predict(model, testData[,-1])
   limiar <- 0.5
@@ -663,14 +663,14 @@ cat("\nRecall : ",recall,"\n")
 
 
 ######################## ---------------------------- ############################3
-folds <- cut(seq(1,nrow(newTrainSet)),breaks = 10, labels = FALSE);
+folds <- cut(seq(1,nrow(train)),breaks = 10, labels = FALSE);
 acuracia <- 0
 precisao <- 0
 recall <- 0
 for (i in 1:10) {
   testIndexes <- which(folds == i, arr.ind = TRUE)
-  testData <- newTrainSet[testIndexes,]
-  trainData <- newTrainSet[-testIndexes,]
+  testData <- train[testIndexes,]
+  trainData <- train[-testIndexes,]
   model <- mlp(	x = trainData[,-1], 
                 y = trainData[,1], 
                 size = 100, 
